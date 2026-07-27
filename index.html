@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bridge — Impulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08040e; --ink:#f4ece6; --mut:#9c8794; --dim:#6d5b68;
+  --gold:#d9a860; --rose:#e0577a; --wine:#7a2338; --ind:#6a56a8; --teal:#4f9c96;
+  --line:rgba(217,168,96,.18);
+  --panel:rgba(255,255,255,.035);
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans); font-weight:300;
+  min-height:100%; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+
+/* ── the living background ─────────────────────── */
+#bg{position:fixed;inset:0;z-index:0;display:block}
+#tint{position:fixed;inset:0;z-index:1;pointer-events:none;transition:background 2.4s ease;
+  background:radial-gradient(1200px 800px at 20% -10%, rgba(122,35,56,.22), transparent 60%),
+             radial-gradient(900px 700px at 90% 110%, rgba(106,86,168,.2), transparent 60%)}
+#vig{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(4,2,8,.75) 100%);
+  animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.9}50%{opacity:1}}
+body::after{ /* film grain */
+  content:''; position:fixed; inset:0; pointer-events:none; opacity:.045; z-index:98;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── thread rail ───────────────────────────────── */
+#rail{position:fixed;left:0;top:0;bottom:0;width:56px;display:flex;align-items:center;
+  justify-content:center;gap:7px;z-index:20;opacity:0;transition:opacity 1.2s}
+#rail.on{opacity:1}
+.thread{width:2px;height:38vh;background:rgba(255,255,255,.05);border-radius:2px;position:relative;overflow:hidden}
+.thread i{position:absolute;left:0;right:0;bottom:0;height:50%;border-radius:2px;
+  transition:height 1.1s cubic-bezier(.2,.7,.2,1), background .8s;
+  box-shadow:0 0 8px currentColor}
+@media(max-width:820px){#rail{display:none}}
+
+/* ── stage ─────────────────────────────────────── */
+#stage{max-width:760px;margin:0 auto;padding:7vh 26px 140px;position:relative;z-index:5}
+.fade{animation:fade .85s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.slow{animation:fade 1.4s cubic-bezier(.2,.7,.2,1) both}
+.rv{opacity:0;animation:fade 1s cubic-bezier(.2,.7,.2,1) forwards}
+
+h1{font-family:var(--serif);font-weight:300;font-size:clamp(3.2rem,10vw,5.6rem);
+  line-height:.95;letter-spacing:-.02em}
+h2{font-family:var(--serif);font-weight:300;font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.15}
+h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;letter-spacing:.01em}
+.kicker{font-family:var(--sans);font-size:.66rem;letter-spacing:.42em;text-transform:uppercase;
+  color:var(--gold);opacity:.75;margin-bottom:22px}
+.lead{font-family:var(--serif);font-size:1.32rem;line-height:1.62;color:#e6dcd6;font-weight:300}
+.muted{color:var(--mut);font-size:.94rem;line-height:1.75}
+em{font-style:italic;color:var(--gold);opacity:.92}
+.rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:34px 0}
+.scene{font-family:var(--serif);font-style:italic;font-weight:300;font-size:1.06rem;
+  color:var(--mut);line-height:1.6;margin-bottom:20px;padding-left:16px;
+  border-left:1px solid rgba(217,168,96,.3)}
+
+/* ── chapter interstitial ──────────────────────── */
+.chnum{font-family:var(--serif);font-weight:300;font-size:clamp(7rem,22vw,13rem);line-height:.8;
+  color:transparent;-webkit-text-stroke:1px rgba(217,168,96,.28);
+  user-select:none;margin-bottom:-18px;animation:chglow 5s ease-in-out infinite}
+@keyframes chglow{0%,100%{-webkit-text-stroke-color:rgba(217,168,96,.22)}50%{-webkit-text-stroke-color:rgba(217,168,96,.45)}}
+
+/* ── buttons ───────────────────────────────────── */
+.btn{display:inline-block;font-family:var(--sans);font-size:.74rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--gold);background:transparent;
+  border:1px solid rgba(217,168,96,.4);padding:16px 34px;cursor:pointer;
+  transition:.45s;border-radius:1px;position:relative;overflow:hidden}
+.btn:hover{background:rgba(217,168,96,.1);border-color:var(--gold);letter-spacing:.34em;
+  box-shadow:0 0 30px rgba(217,168,96,.15)}
+.btn.ghost{color:var(--mut);border-color:rgba(255,255,255,.12)}
+.btn.ghost:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+.btn[disabled]{opacity:.25;cursor:not-allowed}
+
+/* ── options ───────────────────────────────────── */
+.opts{display:flex;flex-direction:column;gap:11px;margin-top:34px}
+.opt{position:relative;text-align:left;background:var(--panel);border:1px solid rgba(255,255,255,.07);
+  border-left:2px solid rgba(217,168,96,.22);color:#e9e0da;font-family:var(--serif);
+  font-size:1.16rem;line-height:1.5;font-weight:300;padding:19px 22px 19px 26px;cursor:pointer;
+  transition:.32s cubic-bezier(.2,.7,.2,1);border-radius:2px;backdrop-filter:blur(2px)}
+.opt:hover{background:rgba(217,168,96,.09);border-left-color:var(--gold);
+  transform:translateX(7px);color:#fff;box-shadow:0 0 34px rgba(217,168,96,.07)}
+.opt.sel{background:rgba(217,168,96,.16);border-left-color:var(--gold);transform:translateX(7px);
+  box-shadow:0 0 40px rgba(217,168,96,.14)}
+
+/* ── mirror ────────────────────────────────────── */
+.mirror{margin-top:28px;background:var(--panel);border:1px solid rgba(255,255,255,.07);
+  padding:26px 24px;border-radius:3px;backdrop-filter:blur(3px)}
+.mrow{margin-bottom:24px}
+.mrow:last-of-type{margin-bottom:0}
+.mlab{font-size:.64rem;letter-spacing:.3em;text-transform:uppercase;margin-bottom:14px;display:flex;
+  justify-content:space-between;align-items:baseline;gap:12px}
+.mlab .who{color:var(--gold)}
+.mrow.b .mlab .who{color:#9d86e8}
+.mlab .val{font-family:var(--serif);font-size:1.05rem;letter-spacing:0;text-transform:none;color:var(--mut)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;
+  background:rgba(255,255,255,.13);outline:none;border-radius:2px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;
+  border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 14px rgba(217,168,96,.7);transition:.2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.22)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border:none;border-radius:50%;
+  background:var(--gold);cursor:pointer;box-shadow:0 0 14px rgba(217,168,96,.7)}
+.mrow.b input[type=range]::-webkit-slider-thumb{background:#9d86e8;box-shadow:0 0 14px rgba(157,134,232,.7)}
+.mrow.b input[type=range]::-moz-range-thumb{background:#9d86e8;box-shadow:0 0 14px rgba(157,134,232,.7)}
+.ends{display:flex;justify-content:space-between;margin-top:9px;font-size:.72rem;color:var(--dim)}
+
+/* the gap visual — two souls on one line */
+.gapviz{position:relative;height:46px;margin:26px 6px 6px}
+.gapviz .base{position:absolute;top:22px;left:0;right:0;height:1px;background:rgba(255,255,255,.1)}
+.gapviz .span{position:absolute;top:20px;height:5px;border-radius:4px;
+  background:linear-gradient(90deg,rgba(217,168,96,.85),rgba(157,134,232,.85));
+  box-shadow:0 0 18px rgba(217,168,96,.35);transition:left .25s,width .25s}
+.gapviz .dot{position:absolute;top:15px;width:15px;height:15px;border-radius:50%;transition:left .25s}
+.gapviz .da{background:var(--gold);box-shadow:0 0 16px rgba(217,168,96,.9)}
+.gapviz .db{background:#9d86e8;box-shadow:0 0 16px rgba(157,134,232,.9)}
+.delta{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:.8rem;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.delta b{font-family:var(--serif);font-size:1.35rem;font-weight:400;color:var(--gold);flex:0 0 auto}
+
+/* ── progress / chapter mark ───────────────────── */
+#prog{position:fixed;left:0;bottom:0;width:100%;height:1px;background:rgba(255,255,255,.06);z-index:30}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--wine),var(--gold));
+  transition:width .8s cubic-bezier(.2,.7,.2,1);box-shadow:0 0 10px rgba(217,168,96,.6)}
+#chapmark{position:fixed;right:24px;bottom:20px;font-size:.6rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--dim);z-index:30}
+
+/* ── inputs ────────────────────────────────────── */
+.field{margin-bottom:28px}
+.field label{display:block;font-size:.64rem;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);opacity:.7;margin-bottom:12px}
+.field input[type=text]{width:100%;background:transparent;border:none;
+  border-bottom:1px solid rgba(255,255,255,.15);color:var(--ink);font-family:var(--serif);
+  font-size:1.5rem;font-weight:300;padding:8px 0;outline:none;transition:.3s}
+.field input[type=text]:focus{border-bottom-color:var(--gold);box-shadow:0 12px 24px -18px rgba(217,168,96,.5)}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{background:var(--panel);border:1px solid rgba(255,255,255,.09);color:var(--mut);
+  font-family:var(--sans);font-size:.82rem;padding:10px 20px;cursor:pointer;
+  transition:.3s;border-radius:40px}
+.chip:hover{border-color:rgba(217,168,96,.5);color:var(--ink)}
+.chip.sel{background:rgba(217,168,96,.15);border-color:var(--gold);color:var(--gold);
+  box-shadow:0 0 20px rgba(217,168,96,.15)}
+
+/* ── report ────────────────────────────────────── */
+.card{background:rgba(10,6,17,.55);border:1px solid rgba(255,255,255,.07);
+  padding:30px 28px;border-radius:3px;margin-bottom:16px;backdrop-filter:blur(6px)}
+.card .tag{font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);
+  opacity:.72;margin-bottom:16px}
+.card p{font-family:var(--serif);font-size:1.15rem;line-height:1.66;color:#e2d8d2;margin-bottom:14px}
+.card p:last-child{margin-bottom:0}
+.card.warn{border-color:rgba(224,87,122,.3);background:rgba(52,14,26,.5)}
+.card.warn .tag{color:var(--rose)}
+.card.good{border-color:rgba(79,156,150,.3);background:rgba(12,36,34,.45)}
+.card.good .tag{color:var(--teal)}
+
+.seal{width:120px;height:120px;margin:10px auto 26px;position:relative}
+.seal svg{width:100%;height:100%;overflow:visible}
+.seal .ring{fill:none;stroke:var(--gold);stroke-width:1;opacity:.7;
+  stroke-dasharray:360;stroke-dashoffset:360;animation:ring 2.6s ease forwards .4s}
+@keyframes ring{to{stroke-dashoffset:0}}
+.seal .ring2{fill:none;stroke:rgba(217,168,96,.25);stroke-width:.6}
+.seal text{font-family:var(--serif);font-size:44px;fill:var(--gold)}
+
+.doors{margin:34px 0 10px}
+.door{margin-bottom:22px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.dname{font-family:var(--serif);font-size:1.3rem}
+.dpct{font-family:var(--serif);font-size:1.5rem;color:var(--gold)}
+.dbar{height:3px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.dbar i{display:block;height:100%;width:0;transition:width 1.5s cubic-bezier(.2,.7,.2,1)}
+.door.win .dname{color:var(--gold)}
+.dsub{font-size:.8rem;color:var(--dim);margin-top:7px}
+
+.tlist{margin-top:6px}
+.trow{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.045)}
+.trow:last-child{border:none}
+.tname{flex:0 0 148px;font-size:.8rem;color:var(--mut)}
+.tbar{flex:1;height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.tbar i{display:block;height:100%;width:0;background:var(--gold);transition:width 1.3s cubic-bezier(.2,.7,.2,1)}
+.tval{flex:0 0 34px;text-align:right;font-family:var(--serif);font-size:1rem;color:var(--ink)}
+.tnote{font-size:.72rem;color:var(--dim);margin-top:3px}
+
+svg.radar{width:100%;max-width:420px;display:block;margin:8px auto 22px}
+svg.radar .shape{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2.4s ease forwards .6s}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.foot{margin-top:46px;text-align:center;color:var(--dim);font-size:.78rem;line-height:1.9}
+.acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:32px}
+@media print{body{background:#fff;color:#000}#rail,#prog,.acts,#chapmark,#bg,#tint,#vig{display:none}}
+@media (prefers-reduced-motion:reduce){
+  .chnum,#vig{animation:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div id="tint"></div>
+<div id="vig"></div>
+<div id="rail"></div>
+<div id="stage"></div>
+<div id="prog"><i></i></div>
+<div id="chapmark"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   THE BRIDGE — Impulse · v2 "the living cut"
+   Two threads of light cross the screen for the whole game:
+   the rose thread (the chosen) and the violet thread (the given).
+   They begin far apart. As you answer, they braid closer.
+   At the verdict they meet — or you see exactly why they can't.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 0. THE LIVING BACKGROUND ────────────────────────────────── */
+const bg = document.getElementById('bg'), bx = bg.getContext('2d');
+let W=0,H=0,DPR=1;
+function sizeBG(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=innerWidth;H=innerHeight;
+  bg.width=W*DPR;bg.height=H*DPR;
+  bg.style.width=W+'px';bg.style.height=H+'px';
+  bx.setTransform(DPR,0,0,DPR,0,0);
+}
+sizeBG(); addEventListener('resize',sizeBG);
+
+/* moods — each chapter is a different room of the same night */
+const MOODS={
+  intro:   {a:[224,87,122], b:[157,134,232], glow:[217,168,96], n:60, tint:'radial-gradient(1200px 800px at 20% -10%, rgba(122,35,56,.24), transparent 60%),radial-gradient(900px 700px at 90% 110%, rgba(106,86,168,.2), transparent 60%)'},
+  house:   {a:[224,140,90],  b:[217,168,96],  glow:[224,140,90], n:55, tint:'radial-gradient(1100px 760px at 30% -10%, rgba(150,84,32,.22), transparent 60%),radial-gradient(800px 600px at 85% 110%, rgba(122,35,56,.18), transparent 60%)'},
+  dark:    {a:[95,127,184],  b:[106,86,168],  glow:[120,140,220],n:32, tint:'radial-gradient(1100px 760px at 50% -20%, rgba(30,42,90,.3), transparent 60%),radial-gradient(800px 600px at 50% 120%, rgba(16,10,40,.45), transparent 60%)'},
+  fork:    {a:[224,87,122],  b:[79,156,150],  glow:[217,168,96], n:55, tint:'radial-gradient(1000px 760px at 8% 50%, rgba(122,35,56,.26), transparent 55%),radial-gradient(1000px 760px at 92% 50%, rgba(28,84,80,.26), transparent 55%)'},
+  mirror:  {a:[200,200,225], b:[157,134,232], glow:[190,180,230],n:45, tint:'radial-gradient(1100px 760px at 50% -10%, rgba(120,110,180,.2), transparent 60%),radial-gradient(800px 600px at 50% 115%, rgba(60,50,110,.28), transparent 60%)'},
+  dawn:    {a:[240,180,130], b:[224,120,130], glow:[240,190,140],n:60, tint:'radial-gradient(1200px 800px at 50% 115%, rgba(180,110,60,.24), transparent 60%),radial-gradient(900px 700px at 50% -10%, rgba(122,35,56,.16), transparent 60%)'},
+  verdict: {a:[217,168,96],  b:[224,87,122],  glow:[217,168,96], n:80, tint:'radial-gradient(1200px 900px at 50% 30%, rgba(150,105,40,.22), transparent 65%),radial-gradient(900px 700px at 50% 110%, rgba(122,35,56,.2), transparent 60%)'}
+};
+let mood = {...MOODS.intro}, target = MOODS.intro;
+function setMood(name){
+  target = MOODS[name];
+  document.getElementById('tint').style.background = target.tint;
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+const lerpC=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+
+/* petals of light */
+const P=[];
+function spawn(i){
+  return { x:Math.random()*W, y:Math.random()*H,
+    r:1+Math.random()*2.6, s:.12+Math.random()*.5,
+    ph:Math.random()*Math.PI*2, sw:.3+Math.random()*.9,
+    which:Math.random()<.5?0:1, tw:Math.random()*Math.PI*2 };
+}
+for(let i=0;i<90;i++) P.push(spawn(i));
+
+let braid = 0;           // 0 = threads apart, 1 = woven (set by progress)
+let braidT = 0;          // eased
+let heart = 0;           // verdict flourish 0→1
+let t0 = performance.now();
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function threadY(base, x, t, phase, amp){
+  return base
+    + Math.sin(x*0.006 + t*0.00042 + phase)*amp
+    + Math.sin(x*0.0021 - t*0.00027 + phase*1.7)*amp*0.6;
+}
+function drawThread(col, base, phase, t, alpha){
+  bx.beginPath();
+  const amp = lerp(H*0.16, H*0.05, braidT);
+  for(let x=-20;x<=W+20;x+=14){
+    const y=threadY(base,x,t,phase,amp);
+    x===-20?bx.moveTo(x,y):bx.lineTo(x,y);
+  }
+  bx.strokeStyle=`rgba(${col[0]|0},${col[1]|0},${col[2]|0},${alpha})`;
+  bx.lineWidth=1.1; bx.stroke();
+}
+
+function frame(now){
+  const t=now-t0;
+  // ease colors + braid
+  ['a','b','glow'].forEach(k=>{ mood[k]=lerpC(mood[k],target[k],.02); });
+  mood.n = lerp(mood.n||60, target.n, .02);
+  braidT = lerp(braidT, braid, .012);
+  bx.clearRect(0,0,W,H);
+  bx.globalCompositeOperation='lighter';
+
+  // the two threads — far apart at first, braiding toward centre
+  const mid=H*0.52;
+  const sep = lerp(H*0.26, 0, braidT);
+  const ph2 = lerp(Math.PI, Math.PI*2, braidT);   // phase difference closes → they weave
+  for(let pass=0;pass<3;pass++){
+    const a=(.05-pass*.013)*(1+heart*.8);
+    bx.save(); bx.filter=`blur(${pass*2}px)`;
+    drawThread(mood.a, mid-sep, 0,   t, a);
+    drawThread(mood.b, mid+sep, ph2, t, a);
+    bx.restore();
+  }
+
+  // petals
+  const count=Math.round(mood.n);
+  for(let i=0;i<count;i++){
+    const p=P[i];
+    p.ph+=0.006*p.sw; p.tw+=0.03;
+    p.y-=p.s*(reduceMotion?.4:1);
+    p.x+=Math.sin(p.ph)*.35;
+    if(p.y<-10){Object.assign(p,spawn(i));p.y=H+8;}
+    const c=p.which? mood.a: mood.b;
+    const twinkle=.35+.3*Math.sin(p.tw);
+    const g=bx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+    g.addColorStop(0,`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${twinkle})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    bx.fillStyle=g;
+    bx.beginPath();bx.arc(p.x,p.y,p.r*4,0,7);bx.fill();
+  }
+
+  // verdict heart of light where the threads meet
+  if(heart>0.01){
+    const g=bx.createRadialGradient(W/2,mid,0,W/2,mid,220);
+    const gl=mood.glow;
+    g.addColorStop(0,`rgba(${gl[0]|0},${gl[1]|0},${gl[2]|0},${.14*heart})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    bx.fillStyle=g;bx.beginPath();bx.arc(W/2,mid,220,0,7);bx.fill();
+  }
+
+  bx.globalCompositeOperation='source-over';
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ── 1. THE THREADS (the eight measures) ─────────────────────── */
+const THREADS = [
+  {k:'AUT', name:'Self-Authorship',    c:'#d9a860'},
+  {k:'KIN', name:'Kinship Pull',       c:'#e0577a'},
+  {k:'ANX', name:'Anxious Wiring',     c:'#c96f4a'},
+  {k:'AVO', name:'Avoidant Wiring',    c:'#5f7fb8'},
+  {k:'AMB', name:'Ambiguity Tolerance',c:'#4f9c96'},
+  {k:'REG', name:'Regret of Inaction', c:'#9d86e8'},
+  {k:'PRS', name:'Inherited Pressure', c:'#b8556e'},
+  {k:'RDY', name:'Readiness',          c:'#cbb27a'}
+];
+
+const S = {
+  name:'', gender:'', age:'', familyVolume:50,
+  T:{AUT:50,KIN:50,ANX:40,AVO:40,AMB:50,REG:50,PRS:0,RDY:50},
+  coh:100, mirrors:[], answers:[], external:false
+};
+
+/* ── 2. THE SCENARIOS ────────────────────────────────────────── */
+const CHAPTERS = [
+  {n:'I', mood:'house', t:'The House You Grew Up In',
+   b:'Before anyone asks who you will marry, someone already taught you what a marriage is. Usually without saying a word. Walk back through that house. The lights are still on.'},
+  {n:'II', mood:'dark', t:'The Room With No Lights',
+   b:'This chapter is not about romance. It is about what you do when the person you love goes quiet, and you cannot see their face, and the only voice left in the room is yours.'},
+  {n:'III', mood:'fork', t:'The Fork',
+   b:'Two doors. One you open. One is opened for you. The difference is not comfort — it is who holds the story afterwards, and who you get to blame when the story turns.'},
+  {n:'IV', mood:'mirror', t:'The Mirror',
+   b:'Here you answer everything twice. Once as yourself. Once as the person the world expects you to be. The distance between those two answers is the most honest number in this whole reading — and no one has ever measured yours.'},
+  {n:'V', mood:'dawn', t:'Ten Years From Now',
+   b:'You are older now. The choice is long made; the wedding photographs have started to look like photographs of other people. These are not questions about the future. They are questions about what you can forgive yourself for.'}
+];
+
+const Q = [
+/* ── CHAPTER I · KINSHIP ─────────────────────────────────────── */
+{ch:0, s:"Dinner. The good plates, which means something is being discussed. Your chair is the one you have sat in since you were seven.",
+ t:"You are nineteen. You've made a decision your parents disagree with — nothing dramatic. A course. A city. Nobody shouts. Your mother just goes quiet.",
+ o:[
+  {t:"The silence works. I fold before dessert.",                  w:{KIN:14,AUT:-10,RDY:-3}},
+  {t:"I hold. But I carry that silence around for weeks.",         w:{KIN:8,AUT:4,ANX:6}},
+  {t:"I hold, and I let her carry it.",                            w:{KIN:-8,AUT:12}},
+  {t:"I never made the decision. I checked first.",                w:{KIN:16,AUT:-14,RDY:-4}}]},
+
+{ch:0, s:"Every house has a weather. Some houses you could cry in. Some houses you learned to close the door first.",
+ t:"Be honest about that house. When something went wrong for you, what did it become?",
+ o:[
+  {t:"A place that closed around me. Warm.",                       w:{KIN:14,RDY:7,AVO:-6}},
+  {t:"A place that had strong opinions about it.",                 w:{KIN:8,ANX:6}},
+  {t:"A place I didn't tell.",                                     w:{KIN:-12,AVO:10,RDY:-4}},
+  {t:"A place that needed me to be fine.",                         w:{KIN:4,AVO:8,RDY:-6,ANX:4}}]},
+
+{ch:0, s:"A living room full of relatives. Sweets on a tray. Two families performing ease at each other, and in the middle of it, your cousin — smiling the smile you know is their public one.",
+ t:"The match is good on paper. Everyone is pleased. Watching it happen — what actually moves in your chest?",
+ o:[
+  {t:"Relief. Somebody is holding the map.",                       w:{KIN:12,AMB:-10,AUT:-8}},
+  {t:"Curiosity. It could work. It often does.",                   w:{KIN:6,AMB:4,RDY:3}},
+  {t:"A small cold thing. It looks like a transaction.",           w:{KIN:-10,AUT:12}},
+  {t:"Nothing about them. I'm calculating when it's my turn.",     w:{ANX:8,RDY:-5}}]},
+
+{ch:0, s:"Imagine the wedding happened anyway. Your side of the hall, half empty. The photographs are beautiful and everyone in them is doing arithmetic.",
+ t:"You married someone your family never accepted. Never cruel — just never warm. How long before that costs you something real?",
+ o:[
+  {t:"Day one. It would cost me on day one.",                      w:{KIN:16,AUT:-6}},
+  {t:"Three or four years. Around the first child.",               w:{KIN:10,AMB:4}},
+  {t:"It would cost them. Not me.",                                w:{KIN:-14,AUT:10,AVO:6}},
+  {t:"I don't know. And that not-knowing is the frightening part.",w:{AMB:-8,KIN:4,RDY:-3}}]},
+
+{ch:0, s:"You have the receipts, the dates, the screenshot. You are, for once, unambiguously right. The proof is warm in your pocket all through dinner.",
+ t:"Your parents are wrong about something that matters, and you can prove it. What do you do with the proof?",
+ o:[
+  {t:"Keep it. Being right isn't worth the room.",                 w:{KIN:12,AUT:-10,AVO:5}},
+  {t:"Show it gently, and let them keep their face.",              w:{KIN:8,AUT:6,RDY:9}},
+  {t:"Put it on the table.",                                       w:{AUT:14,KIN:-8}},
+  {t:"Show it to everyone except them.",                           w:{KIN:-6,AVO:8,RDY:-7,c:-8}}]},
+
+/* ── CHAPTER II · ATTACHMENT ─────────────────────────────────── */
+{ch:1, s:"The phone is face-down. You turned it face-down on purpose, which is how you know it has already won.",
+ t:"Someone you love hasn't replied in nine hours. Nothing is wrong. Nine hours.",
+ o:[
+  {t:"I haven't checked. Genuinely.",                              w:{ANX:-12,AVO:6}},
+  {t:"I've checked. I'm fine. I've checked again.",                w:{ANX:14}},
+  {t:"I've built three explanations and two of them end with me alone.", w:{ANX:18,RDY:-5}},
+  {t:"I noticed. And I let it be nine hours.",                     w:{ANX:-14,RDY:9}}]},
+
+{ch:1, s:"The kind of fight where afterwards you both stand very still, surprised at the size of what came out. And then — they move first.",
+ t:"A real fight. Voices. Then they stop, and step toward you.",
+ o:[
+  {t:"I step toward them.",                                        w:{ANX:-6,AVO:-12,RDY:9}},
+  {t:"I need the room first. Then I can.",                         w:{AVO:8,RDY:3}},
+  {t:"I hold on, so they can't leave the room.",                   w:{ANX:16}},
+  {t:"I go very calm and very far away — still standing there.",   w:{AVO:16}}]},
+
+{ch:1, s:"They call you before they call anyone else. For everything. The good news, the flat tire, the 2am spiral. You are the first number.",
+ t:"What does it feel like when someone needs you a great deal?",
+ o:[
+  {t:"Like being chosen.",                                         w:{ANX:8,AVO:-8}},
+  {t:"Like being useful — which I confuse with being loved.",      w:{ANX:12,RDY:-6}},
+  {t:"Like a weight I agreed to carry.",                           w:{AVO:12}},
+  {t:"Like an ordinary Tuesday.",                                  w:{AVO:-6,ANX:-6,RDY:10}}]},
+
+{ch:1, s:"Sunday morning. Tea going cold. They are reading in the next room and you can hear the pages turn. Nothing is happening. Nothing has happened for months.",
+ t:"The relationship is calm. Six months of calm. No drama, no crisis, no proving.",
+ o:[
+  {t:"That is the entire point.",                                  w:{ANX:-14,RDY:11}},
+  {t:"I keep waiting for the part where it turns.",                w:{ANX:14,AMB:-6}},
+  {t:"I get restless. I miss the electricity.",                    w:{ANX:10,AMB:6,RDY:-4}},
+  {t:"I start pulling back without deciding to.",                  w:{AVO:14,RDY:-6}}]},
+
+{ch:1, s:"There is a door in you that certain conversations walk past. Everyone who loves you has stood outside it at some point, not knowing it was there.",
+ t:"You have been hurt in a way you have never told anyone. Where does it live now?",
+ o:[
+  {t:"I told someone. It's smaller now.",                          w:{RDY:13,ANX:-5,AVO:-5}},
+  {t:"It lives in how quickly I leave.",                           w:{AVO:14,RDY:-8}},
+  {t:"It lives in how hard I hold.",                               w:{ANX:14,RDY:-8}},
+  {t:"Still sealed. I'd rather not open it.",                      w:{AVO:10,RDY:-11}}]},
+
+/* ── CHAPTER III · AUTONOMY & AMBIGUITY ──────────────────────── */
+{ch:2, s:"A thought experiment with teeth. Two whole lives, laid out side by side like coats. You may put on exactly one.",
+ t:"In one life, you chose — and it is harder. In the other, it was chosen for you — and it is easier. Both end well. Both.",
+ o:[
+  {t:"The one I chose. Obviously.",                                w:{AUT:16}},
+  {t:"The one I chose — and I'd need to say that out loud sometimes.", w:{AUT:12,ANX:5}},
+  {t:"The easier one. I'm not performing anything for anyone.",    w:{AUT:-14,KIN:6,RDY:4}},
+  {t:"I want to have chosen the easier one.",                      w:{AUT:6,AMB:-8,RDY:-4,c:-10}}]},
+
+{ch:2, s:"You know their coffee order and their mother's name and the exact sound of their key in the door. And still — the question sits with you at breakfast.",
+ t:"Six months in, and you still do not know if this is it.",
+ o:[
+  {t:"Six months is nothing. Keep going.",                         w:{AMB:16}},
+  {t:"Six months means something is already wrong.",               w:{AMB:-14}},
+  {t:"I'd ask them where we are.",                                 w:{AMB:-4,RDY:11}},
+  {t:"I'd stay, and quietly start locating the exit.",             w:{AMB:-8,AVO:10,RDY:-7,c:-8}}]},
+
+{ch:2, s:"An aunt did the work. Photographs, professions, families known for two generations. It arrives folded, like a menu, like a blessing, like a trap — you can't decide which.",
+ t:"Someone hands you a shortlist. Three people. All genuinely good, all vetted, all willing.",
+ o:[
+  {t:"Thank god. Let's start.",                                    w:{AUT:-14,KIN:10,AMB:-8}},
+  {t:"I'll meet them. My terms, my pace, my no.",                  w:{AUT:8,KIN:8,RDY:7}},
+  {t:"A list of people is not a list of people.",                  w:{AUT:14,KIN:-8}},
+  {t:"I'd meet all three, choose none, and do it again next year.",w:{AMB:8,AUT:6,RDY:-7,c:-6}}]},
+
+{ch:2, s:"Years from now, someone young will ask you — half joking, entirely serious — how you knew. You will give them one sentence. This one.",
+ t:"What actually makes a marriage <em>yours</em>?",
+ o:[
+  {t:"That I picked it.",                                          w:{AUT:16}},
+  {t:"That I stayed in it.",                                       w:{AUT:-6,KIN:6,RDY:9}},
+  {t:"That both families are in the photograph.",                  w:{KIN:14,AUT:-4}},
+  {t:"That I could have left, and didn't.",                        w:{AUT:12,KIN:8,RDY:6}}]},
+
+{ch:2, s:"A sealed envelope on the left. An open horizon on the right. Whichever you touch, the other one turns to smoke — and you will remember the smoke.",
+ t:"Certainty now, or the possibility of something better later. No take-backs either way.",
+ o:[
+  {t:"Certainty. I know what uncertainty does to me.",             w:{AMB:-16,KIN:6}},
+  {t:"Possibility. I'd rather ache than settle.",                  w:{AMB:16,REG:8}},
+  {t:"Certainty — and I'd wonder about it for years.",             w:{AMB:-8,REG:10,RDY:-4,c:-6}},
+  {t:"Depends entirely on the day you ask me.",                    w:{AMB:4,RDY:-7,c:-12}}]},
+
+/* ── CHAPTER V · REGRET ──────────────────────────────────────── */
+{ch:4, s:"Rain on the windscreen. The groceries going warm in the back seat. You could go inside. You don't, not yet. This is the only room in your life that is entirely yours.",
+ t:"Ten years from now. You are alone in a parked car, engine off. Which sentence arrives?",
+ o:[
+  {t:"“I should have tried.”",                            w:{REG:18}},
+  {t:"“I shouldn't have blown up my life for that.”",     w:{REG:-16}},
+  {t:"“I did it right, and I still don't know if it was mine.”", w:{REG:10,AUT:8}},
+  {t:"No sentence arrives. I'm alright.",                          w:{REG:-6,RDY:9}}]},
+
+{ch:4, s:"They are sixteen and furious and standing in your kitchen, asking how you could possibly understand. And you realise you are about to hand them the sentence you built your life on.",
+ t:"Which regret would you rather one day explain to a child of your own?",
+ o:[
+  {t:"“I chose someone, and it was hard.”",               w:{REG:14,AUT:8}},
+  {t:"“I listened to people who loved me.”",              w:{REG:-14,KIN:10}},
+  {t:"“I waited too long to be sure.”",                   w:{REG:8,AMB:-6,RDY:-4}},
+  {t:"Neither. I want a third answer.",                            w:{AUT:6,KIN:6,AMB:5}}]},
+
+{ch:4, s:"An anniversary dinner, the twentieth. The waiter assumes you're happy, and he is not wrong, exactly. Across the table: the most familiar face in the world.",
+ t:"Twenty years in. The marriage is good. Not thrilling — steady, kind, unsurprising.",
+ o:[
+  {t:"That is the definition of success.",                         w:{REG:-12,AMB:-6,RDY:11}},
+  {t:"That's a slow death, and I'd feel it by year five.",         w:{REG:14,AMB:8}},
+  {t:"Good. And I'd need one thing that is only mine.",            w:{REG:6,AUT:10,RDY:9}},
+  {t:"I'd stay, and quietly stop being there.",                    w:{AVO:14,RDY:-11}}]},
+
+{ch:4, s:"Not the list you'd post. Not the list your friends would clap for. The real one — the one you'd only say with the lights off.",
+ t:"Right now, honestly — could you name what you <em>need</em> from a partner? Not what you like. Need.",
+ o:[
+  {t:"Yes. Three things. I could say them out loud right now.",    w:{RDY:18}},
+  {t:"Roughly. I'd fumble it.",                                    w:{RDY:4}},
+  {t:"No. I'd describe a person instead of a need.",               w:{RDY:-9}},
+  {t:"Nobody has ever asked me that.",                             w:{RDY:-5}}]},
+
+{ch:4, s:"Last one. Close your eyes if you need to. Empty hall. No audience, no aunties, no group chat, no God watching through anyone else's eyes. Just you and the choice.",
+ t:"If no one — not one single person — would ever know or judge your choice, does the choice change?",
+ o:[
+  {t:"No. Same answer.",                                           w:{RDY:14,c:12}},
+  {t:"Yes. Completely.",                                           w:{RDY:-9,c:-20,ext:1}},
+  {t:"It gets easier. Not different.",                             w:{RDY:9,AUT:6,c:6}},
+  {t:"I don't know who I'd be without the judging.",               w:{RDY:-13,c:-16,ext:1}}]}
+];
+
+/* ── 3. THE MIRROR ───────────────────────────────────────────── */
+const MIRROR = [
+ {s:"Two people at the edge of becoming something. One of them has to say it first, and saying it first is a kind of falling.",
+  t:"Who moves first? Who says the thing that cannot be taken back?",
+  L:"They should", R:"I should", w:{AUT:6}},
+ {s:"Two careers, one city between them. The boxes are flat-packed in the hallway, waiting to find out whose books go in them.",
+  t:"One of you gives up a city for the other's work. Who packs?",
+  L:"I do", R:"They do", w:{}},
+ {s:"The bill arrives. One of you reaches faster, and both of you notice, and neither of you says anything about what it means.",
+  t:"One of you earns significantly more. How much does that reshape the marriage?",
+  L:"Not at all", R:"It defines it", w:{}},
+ {s:"Mid-argument. Something true and hot is rising in your throat, and somewhere behind your eyes a voice says: careful — remember what you're supposed to be.",
+  t:"In a fight, how much feeling is allowed to show on your face?",
+  L:"None. Stay level.", R:"All of it.", w:{AVO:6}},
+ {s:"Another birthday. The candles get counted twice — once by you, once by everyone who loves you and has opinions about your timeline.",
+  t:"The clock. How much does age press on the decision?",
+  L:"It doesn't", R:"It runs everything", w:{AMB:-5,RDY:-4}},
+ {s:"A phone call in the night, a parent's voice suddenly older than you remembered. Someone will rearrange their whole life now. The question is whose life bends.",
+  t:"After the wedding — whose parents get cared for, and by whom?",
+  L:"Each side carries its own", R:"It lands on me", w:{}}
+];
+
+/* ── 4. ENGINE ───────────────────────────────────────────────── */
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const el=id=>document.getElementById(id);
+const stage=el('stage');
+
+function apply(w){
+  for(const k in w){
+    if(k==='c'){ S.coh=clamp(S.coh+w.c); continue; }
+    if(k==='ext'){ S.external=true; continue; }
+    S.T[k]=clamp(S.T[k]+w[k]);
+  }
+  paintRail();
+}
+function buildRail(){
+  el('rail').innerHTML = THREADS.map(t=>
+    `<div class="thread"><i id="r_${t.k}" style="background:${t.c};color:${t.c};height:${S.T[t.k]}%"></i></div>`).join('');
+}
+function paintRail(){
+  THREADS.forEach(t=>{ const n=el('r_'+t.k); if(n) n.style.height=S.T[t.k]+'%'; });
+}
+
+const TOTAL = Q.length + MIRROR.length;
+let answered = 0;
+function progress(){
+  el('prog').firstElementChild.style.width = (answered/TOTAL*100)+'%';
+  braid = answered/TOTAL;          // the threads weave as you answer
+}
+
+function score(){
+  const T=S.T, SEC = clamp(100 - Math.max(T.ANX,T.AVO) + 8);
+  // insecurity costs every door, just in different currencies — avoidance weighs
+  // heavier on the chosen path, anxiety heavier on the given one
+  const SECL = clamp(100 - (0.65*T.AVO + 0.45*T.ANX));
+  let love = .30*T.AUT + .20*T.AMB + .20*T.REG + .15*(100-T.KIN) + .15*SECL;
+  let arr  = .30*T.KIN + .20*(100-T.AMB) + .20*(100-T.REG) + .15*(100-T.AUT) + .15*SEC;
+  let bri  = .45*Math.min(T.AUT,T.KIN) + .25*(100-Math.abs(T.AUT-T.KIN)) + .15*T.AMB + .15*SEC;
+
+  // inherited pressure taxes the doors that require standing against the room
+  love -= T.PRS*0.14;
+  bri  -= T.PRS*0.05;
+
+  const sum=love+arr+bri;
+  const pct={love:love/sum*100, arranged:arr/sum*100, bridge:bri/sum*100};
+  const rank=Object.keys(pct).sort((a,b)=>pct[b]-pct[a]);
+  const gap=pct[rank[0]]-pct[rank[1]];
+  const conf = gap>14?'Clear' : gap>6?'Leaning' : 'Split';
+  return {pct,rank,gap,conf,SEC};
+}
+
+const DOOR={
+  love:{n:'The Chosen', s:'Love marriage', c:'linear-gradient(90deg,#7a2338,#e0577a)', g:'♥',
+    line:'You need the decision to be yours. Not because you are stubborn — because a life handed to you would never quite feel like it happened to you.'},
+  arranged:{n:'The Given', s:'Arranged marriage', c:'linear-gradient(90deg,#3b2f6b,#9d86e8)', g:'◈',
+    line:'You draw strength from structure and from being held by something larger than yourself. Certainty first. Intimacy earned afterwards, slowly, on purpose.'},
+  bridge:{n:'The Bridge', s:'Assisted — family opens the door, you walk through it', g:'⌒',
+    c:'linear-gradient(90deg,#6b5220,#d9a860)',
+    line:'You hold two needs at once: to belong, and to have chosen. You are not fence-sitting. You are asking for both, and both is a real architecture — with its own real cost.'}
+};
+
+function failure(top){
+  const T=S.T;
+  if(T.RDY<45) return {n:'Neither door yet',
+    p:["Not a verdict against you — a verdict about timing. Your readiness reads at "+Math.round(T.RDY)+", and readiness is not the same thing as wanting it. Everything above this line describes the shape you'll have when you get there.",
+       "Right now the honest instruction is: don't pick a door. Pick a year."]};
+  if(S.coh<50) return {n:'The unnamed fight',
+    p:["Your answers contradict each other in a specific, patterned way — that isn't carelessness, it's a person arguing with somebody who isn't in the room.",
+       "You will bring that argument into a marriage and your partner will think it is about them. Name the other voice before you marry anyone. Say the name out loud."]};
+  if(top==='love' && T.ANX>60) return {n:'Disillusionment through intensity',
+    p:["You are wired to read intensity as proof. The chase feels like aliveness; the calm that comes after feels, quietly, like loss.",
+       "The risk is not that you pick the wrong person. It's that you pick the right one and mistake peace for the end of love. Watch for the month it goes still. That month is the test, not the ending."]};
+  if(top==='love' && T.PRS>35) return {n:'The price you did not read',
+    p:["You'll win the fight. That part I'd bet on. The instalments are the part nobody warns you about — the ten years of small cold rooms and half-invitations afterwards.",
+       "You can absolutely pay it. But price it out loud, with the actual person, before the wedding — not during the third year, in a kitchen, at midnight."]};
+  if(top==='arranged' && T.AUT>60) return {n:'The quiet resignation',
+    p:["Nothing will be wrong. That is precisely the problem. Your self-authorship reads at "+Math.round(T.AUT)+", which means a good life you didn't choose will eventually register as a life that happened near you.",
+       "If you take this door, take it loudly. Insist on the veto. Insist on the meetings, the no, the second no. A door you walked through is survivable; a door you were carried through is not."]};
+  if(top==='arranged' && T.AVO>60) return {n:'Two polite strangers',
+    p:["This is the most deceptive failure in the whole system, because from the outside it looks like a successful marriage — for twenty years.",
+       "Structure lets you be married without being known, and you are wired to accept that trade without noticing you made it. Build one deliberate ritual of disclosure. Something small and regular and non-negotiable."]};
+  if(top==='bridge' && T.AMB<40) return {n:'Paralysis at the bridge',
+    p:["Infinite optionality plus a permanent safety net means no choice ever has to become final — and you have a low tolerance for the unresolved, so this will grind you.",
+       "Set a real limit. A number of meetings, a date on a calendar. The Bridge only works for people who are willing to eventually burn it."]};
+  return {n:'The drift',
+    p:["No single fault line dominates your profile, which is genuinely good news — but under stress, people don't stay at their strongest door. They drift to their second.",
+       "Yours is "+DOOR[score().rank[1]].n+". Know that in advance, so that when you drift you can at least see yourself doing it."]};
+}
+
+function theAsk(top){
+  const T=S.T, a=[];
+  if(T.ANX>58) a.push("Someone whose reassurance is <em>boring</em> — steady, unprompted, unearned. You do not need a person who proves it. You need a person who doesn't make you ask.");
+  if(T.AVO>58) a.push("Someone who can be near you without needing you to perform closeness on demand — and who will still, gently, refuse to let you disappear.");
+  if(T.AUT>62) a.push("Someone who has their own life and does not require you to be the plot of theirs. Being needed too much will read to you as being spent.");
+  if(T.KIN>62) a.push("Someone who is genuinely good with your family — not tolerant of them. Tolerance runs out around year four.");
+  if(T.AMB<42) a.push("Someone who states things plainly. Ambiguity is not romance to you; it is a low-grade fever.");
+  if(T.PRS>35) a.push("Someone who can hear the inherited script in your head and not take it personally when it speaks louder than you do.");
+  if(T.REG>62) a.push("Someone worth the story. You will be telling yourself this story for fifty years — make sure it holds up in the retelling.");
+  if(!a.length) a.push("Someone unremarkable in the best possible sense: consistent, curious about you after the novelty ends, and unbothered by silence.");
+  return a.slice(0,4);
+}
+
+const INVOICE={
+  love:"You will not be able to blame anyone. Every hard year is a year you signed for. That is the freedom and that is the bill — they are the same item.",
+  arranged:"You are trading the peak for the floor. There will very likely never be a night you describe as the best of your life. In exchange, there will very likely never be a night you cannot get through.",
+  bridge:"You are asking two systems to both approve of you — yourself and your family. When they disagree, and they will, no one can break the tie. You'll have to, and you'll have to do it alone."
+};
+
+/* ── 5. RENDER ───────────────────────────────────────────────── */
+function go(fn){ stage.innerHTML=''; fn(); window.scrollTo({top:0,behavior:'instant'}); }
+function reveal(){ // stagger every .rv child
+  stage.querySelectorAll('.rv').forEach((n,i)=>{ n.style.animationDelay=(i*0.14)+'s'; });
+}
+
+function scrIntro(){
+  setMood('intro');
+  stage.innerHTML=`
+  <div style="padding-top:8vh">
+    <div class="kicker rv">Impulse</div>
+    <h1 class="rv">The<br><span style="color:var(--gold)">Bridge</span></h1>
+    <p class="rv" style="font-family:var(--serif);font-style:italic;font-weight:300;font-size:1.08rem;color:var(--mut);margin-top:18px;letter-spacing:.02em">If you have lost your path in love, Impulse shows you the direction — not the path.</p>
+    <div class="rule rv"></div>
+    <p class="lead rv">Both doors lead to a room where something breaks.<br>
+    This asks which breakage you can live inside.</p>
+    <div style="height:28px"></div>
+    <p class="muted rv">Love marriage fails through <em>disillusionment</em> — you chose from a peak, and peaks flatten. Arranged marriage fails through <em>resignation</em> — you never had the peak, so nothing flattens, and a slow question builds instead.</p>
+    <div style="height:16px"></div>
+    <p class="muted rv">Neither failure is worse. They are different shapes of pain, and people are not equally built for both. Twenty-six questions. Ten minutes. There are no right answers — the engine scores the distance between your answers, not the answers themselves, so it cannot be flattered and it cannot be gamed.</p>
+    <div style="height:16px"></div>
+    <p class="muted rv" style="font-size:.82rem;opacity:.7">The two threads of light behind this page are the two doors. They begin apart. Watch what they do as you answer.</p>
+    <div style="height:40px"></div>
+    <button class="btn rv" onclick="go(scrThreshold)">Cross</button>
+  </div>`;
+  reveal();
+}
+
+function scrThreshold(){
+  stage.innerHTML=`
+  <div class="fade">
+    <div class="kicker">Chapter Zero — The Threshold</div>
+    <h2>Before anything else.</h2>
+    <div class="rule"></div>
+    <div class="field">
+      <label>What should this reading call you</label>
+      <input type="text" id="nm" placeholder="a name, or anything" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>You are</label>
+      <div class="chips" id="gd">
+        ${['A man','A woman','Neither / other'].map(g=>`<div class="chip" data-v="${g}">${g}</div>`).join('')}
+      </div>
+      <p class="tnote" style="margin-top:10px">Nothing in this engine is scored by gender. This only decides whose expectation you are reading against in Chapter IV.</p>
+    </div>
+    <div class="field">
+      <label>Roughly</label>
+      <div class="chips" id="ag">
+        ${['Under 22','22–26','27–31','32–37','38+'].map(g=>`<div class="chip" data-v="${g}">${g}</div>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label>How loudly does your family's opinion live in your head</label>
+      <input type="range" id="fv" min="0" max="100" value="50">
+      <div class="ends"><span>a distant radio</span><span>a voice in the room</span></div>
+    </div>
+    <div style="height:26px"></div>
+    <button class="btn" id="goB" disabled onclick="startPlay()">Begin</button>
+  </div>`;
+  const check=()=>{ el('goB').disabled = !(S.name && S.gender && S.age); };
+  el('nm').oninput = e=>{ S.name=e.target.value.trim(); check(); };
+  ['gd','ag'].forEach(id=>{
+    el(id).querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+      el(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');
+      if(id==='gd') S.gender=c.dataset.v; else S.age=c.dataset.v;
+      check();
+    });
+  });
+  el('fv').oninput = e=>{ S.familyVolume=+e.target.value; };
+}
+
+function startPlay(){
+  S.T.KIN = clamp(S.T.KIN + (S.familyVolume-50)*0.30);
+  buildRail(); el('rail').classList.add('on');
+  chapterCard(0);
+}
+
+function chapterCard(ci){
+  const c=CHAPTERS[ci];
+  setMood(c.mood);
+  el('chapmark').textContent='Chapter '+c.n;
+  stage.innerHTML=`
+  <div style="padding-top:10vh">
+    <div class="chnum rv">${c.n}</div>
+    <div class="kicker rv">Chapter ${c.n}</div>
+    <h2 class="rv">${c.t}</h2>
+    <div class="rule rv"></div>
+    <p class="lead rv">${c.b}</p>
+    <div style="height:40px"></div>
+    <button class="btn rv" onclick="enterChapter(${ci})">Continue</button>
+  </div>`;
+  reveal();
+}
+
+let queue=[], qi=0, curChapter=0;
+function enterChapter(ci){
+  curChapter=ci;
+  if(ci===3){ mi=0; return go(mirrorScreen); }
+  queue = Q.filter(q=>q.ch===ci); qi=0;
+  go(qScreen);
+}
+
+function qScreen(){
+  const q=queue[qi];
+  stage.innerHTML=`
+  <div style="padding-top:8vh">
+    <div class="kicker rv">Chapter ${CHAPTERS[curChapter].n} · ${qi+1} of ${queue.length}</div>
+    <p class="scene rv">${q.s}</p>
+    <h3 class="rv" style="font-size:1.7rem;line-height:1.35;font-weight:300">${q.t}</h3>
+    <div class="opts">
+      ${q.o.map((o,i)=>`<button class="opt rv" onclick="pick(${i})">${o.t}</button>`).join('')}
+    </div>
+  </div>`;
+  reveal();
+}
+
+function pick(i){
+  const q=queue[qi];
+  document.querySelectorAll('.opt')[i].classList.add('sel');
+  apply(q.o[i].w);
+  S.answers.push({q:q.t, a:q.o[i].t});
+  answered++; progress();
+  setTimeout(()=>{
+    qi++;
+    if(qi<queue.length) go(qScreen);
+    else nextChapter();
+  },360);
+}
+
+function nextChapter(){
+  const order=[0,1,2,3,4];
+  const pos=order.indexOf(curChapter);
+  if(pos<order.length-1) chapterCard(order[pos+1]);
+  else finish();
+}
+
+/* ── the mirror screen ───────────────────────────────────────── */
+let mi=0;
+function mirrorScreen(){
+  const m=MIRROR[mi];
+  el('chapmark').textContent='Chapter IV';
+  stage.innerHTML=`
+  <div style="padding-top:6vh">
+    <div class="kicker rv">Chapter IV · The Mirror · ${mi+1} of ${MIRROR.length}</div>
+    <p class="scene rv">${m.s}</p>
+    <h3 class="rv" style="font-size:1.6rem;line-height:1.35;font-weight:300">${m.t}</h3>
+    <div class="mirror rv">
+      <div class="mrow a">
+        <div class="mlab"><span class="who">What I actually want</span><span class="val" id="va"></span></div>
+        <input type="range" id="sa" min="0" max="100" value="50">
+        <div class="ends"><span>${m.L}</span><span>${m.R}</span></div>
+      </div>
+      <div class="mrow b">
+        <div class="mlab"><span class="who">What's expected of ${expectedOf()}</span><span class="val" id="vb"></span></div>
+        <input type="range" id="sb" min="0" max="100" value="50">
+        <div class="ends"><span>${m.L}</span><span>${m.R}</span></div>
+      </div>
+      <div class="gapviz">
+        <div class="base"></div>
+        <div class="span" id="gspan"></div>
+        <div class="dot da" id="gda"></div>
+        <div class="dot db" id="gdb"></div>
+      </div>
+      <div class="delta"><span id="dtxt">Move both. The gap between the two lights is the measurement.</span><b id="dval">—</b></div>
+    </div>
+    <div style="height:28px"></div>
+    <button class="btn rv" onclick="mirrorNext()">Set</button>
+  </div>`;
+  reveal();
+
+  const upd=()=>{
+    const a=+el('sa').value, b=+el('sb').value, d=Math.abs(a-b);
+    el('va').textContent=word(a); el('vb').textContent=word(b);
+    el('dval').textContent=d;
+    const lo=Math.min(a,b), hi=Math.max(a,b);
+    el('gda').style.left=`calc(${a}% - 7px)`;
+    el('gdb').style.left=`calc(${b}% - 7px)`;
+    el('gspan').style.left=lo+'%';
+    el('gspan').style.width=(hi-lo)+'%';
+    el('gspan').style.opacity = d<6? .15 : 1;
+    el('dtxt').textContent = d<8 ? 'Aligned. You want what you were taught to want — that is low friction, and it is a strength.'
+      : d<25 ? 'A small gap. Manageable, but it will show up in the small decisions.'
+      : d<45 ? 'A real gap. You are carrying a script that is not yours.'
+      : 'A wide gap. Every decision here will be a negotiation with a room that is not present.';
+  };
+  el('sa').oninput=upd; el('sb').oninput=upd; upd();
+}
+const word=v=> v<15?'strongly left':v<38?'leaning left':v<62?'in the middle':v<85?'leaning right':'strongly right';
+function expectedOf(){
+  return S.gender==='A man'?'a man':S.gender==='A woman'?'a woman':'someone like you';
+}
+function mirrorNext(){
+  const m=MIRROR[mi], a=+el('sa').value, b=+el('sb').value;
+  S.mirrors.push({t:m.t,a,b,d:Math.abs(a-b)});
+  for(const k in m.w) S.T[k]=clamp(S.T[k] + m.w[k]*((a-50)/50));
+  answered++; progress();
+  mi++;
+  if(mi<MIRROR.length) go(mirrorScreen);
+  else{
+    const avg = S.mirrors.reduce((s,x)=>s+x.d,0)/S.mirrors.length;
+    S.T.PRS = clamp(avg*1.55);
+    S.coh = clamp(S.coh - S.T.PRS*0.28);
+    paintRail();
+    nextChapter();
+  }
+}
+
+/* ── 6. THE VERDICT ──────────────────────────────────────────── */
+function radar(){
+  const cx=210,cy=190,R=140,n=THREADS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r];};
+  let g='';
+  [.25,.5,.75,1].forEach(f=>{
+    g+=`<polygon points="${THREADS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.07)"/>`;
+  });
+  THREADS.forEach((t,i)=>{
+    const[x,y]=pt(i,R);
+    g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.06)"/>`;
+    const[lx,ly]=pt(i,R+26);
+    g+=`<text x="${lx}" y="${ly}" fill="${t.c}" font-size="9.5" font-family="Inter,sans-serif"
+        text-anchor="${lx>cx+6?'start':lx<cx-6?'end':'middle'}" opacity=".85">${t.name.split(' ')[0]}</text>`;
+  });
+  const poly=THREADS.map((t,i)=>pt(i,R*S.T[t.k]/100).join(',')).join(' ');
+  g+=`<polygon class="shape" points="${poly}" fill="rgba(217,168,96,.16)" stroke="var(--gold)" stroke-width="1.3"/>`;
+  THREADS.forEach((t,i)=>{const[x,y]=pt(i,R*S.T[t.k]/100);
+    g+=`<circle cx="${x}" cy="${y}" r="3" fill="${t.c}"/>`;});
+  return `<svg class="radar" viewBox="0 0 420 380">${g}</svg>`;
+}
+
+const NOTE={
+  AUT:v=>v>65?'A life handed to you would never feel like it happened to you.':v<38?'You are not diminished by guidance — you are steadied by it.':'You want a say. You do not need the whole vote.',
+  KIN:v=>v>65?'You marry into a net, not a void. That net has weight, and weight is not the same as a cage.':v<38?'You are unusually free, and freedom of this kind is often the residue of a net that failed.':'Family matters to you at a normal, negotiable volume.',
+  ANX:v=>v>60?'You read silence as information. It usually is not.':v<35?'Silence does not frighten you. This is rarer than you think.':'Ordinary vigilance. Nothing to manage.',
+  AVO:v=>v>60?'Closeness registers as demand. You will need to consciously choose to stay in rooms.':v<35?'You move toward people under stress. This is the single most protective trait in this whole reading.':'You need some distance. Most people do.',
+  AMB:v=>v>65?'You can hold an open question without needing to close it. This is a real advantage in the long middle.':v<38?'The unresolved costs you something physical. Do not choose a path with a long undefined phase.':'You can sit with not-knowing, up to a point.',
+  REG:v=>v>62?'The unchosen door will haunt you. You have to choose.':v<38?'The wrong choice will haunt you more than the unmade one. You should be guided.':'Balanced. You will forgive yourself either way, eventually.',
+  PRS:v=>v>45?'You are carrying a loud inherited script. This is the cost line on your invoice.':v<18?'You want what you were taught to want, or you were taught very little. Low friction either way.':'A script exists. It is not running you.',
+  RDY:v=>v>65?'You are actually ready. Most people at this stage are not.':v<45?'Readiness is not desire. This number overrides everything above it.':'Roughly ready. A few things unsealed.'
+};
+
+/* ── storage: every completed reading is archived ────────────── */
+const STORE_KEY='bridge_records_v1';
+function saveRecord(r,f){
+  try{
+    const rec={
+      id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      ts:new Date().toISOString(),
+      name:S.name, gender:S.gender, age:S.age, familyVolume:S.familyVolume,
+      T:{...S.T}, coh:Math.round(S.coh), external:S.external,
+      pct:{love:+r.pct.love.toFixed(2),arranged:+r.pct.arranged.toFixed(2),bridge:+r.pct.bridge.toFixed(2)},
+      rank:r.rank, gap:+r.gap.toFixed(2), conf:r.conf, fail:f.n,
+      mirrors:S.mirrors.map(m=>({t:m.t,a:m.a,b:m.b,d:m.d})),
+      answers:S.answers
+    };
+    const all=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+    all.push(rec);
+    localStorage.setItem(STORE_KEY,JSON.stringify(all));
+    return true;
+  }catch(e){ return false; }
+}
+
+function finish(){
+  el('chapmark').textContent='';
+  el('prog').firstElementChild.style.width='100%';
+  setMood('verdict'); braid=1; heart=1;
+  const r=score(), top=r.rank[0], second=r.rank[1], f=failure(top), ask=theAsk(top);
+  const T=S.T;
+  const archived=saveRecord(r,f);
+
+  const drivers=THREADS.filter(t=>['AUT','KIN','AMB','REG','PRS'].includes(t.k))
+    .map(t=>({...t,v:T[t.k],dev:Math.abs(T[t.k]-50)}))
+    .sort((a,b)=>b.dev-a.dev).slice(0,3);
+
+  stage.innerHTML=`
+  <div class="slow" style="padding-top:5vh">
+    <div class="kicker" style="text-align:center">The Reading · ${S.name}</div>
+    <div class="seal">
+      <svg viewBox="0 0 120 120">
+        <circle class="ring2" cx="60" cy="60" r="52"/>
+        <circle class="ring" cx="60" cy="60" r="57"/>
+        <text x="60" y="76" text-anchor="middle">${DOOR[top].g}</text>
+      </svg>
+    </div>
+    <h2 style="text-align:center">Your door is<br><span style="color:var(--gold)">${DOOR[top].n}</span></h2>
+    <p class="muted" style="margin-top:12px;text-align:center">${DOOR[top].s} &nbsp;·&nbsp; confidence: <em>${r.conf}</em></p>
+    <div class="rule"></div>
+    <p class="lead">${DOOR[top].line}</p>
+
+    <div class="doors">
+      ${r.rank.map(k=>`
+        <div class="door ${k===top?'win':''}">
+          <div class="dhead"><span class="dname">${DOOR[k].n}</span><span class="dpct">${Math.round(r.pct[k])}%</span></div>
+          <div class="dbar"><i data-w="${r.pct[k]*1.9}" style="background:${DOOR[k].c}"></i></div>
+          <div class="dsub">${DOOR[k].s}</div>
+        </div>`).join('')}
+    </div>
+    ${r.conf==='Split'?`<div class="card warn"><div class="tag">Split result</div>
+      <p>Your top two doors are within ${r.gap.toFixed(1)} points. That is not a measurement failure — it is the finding. You are genuinely two people on this question, and whichever door you take, the other one stays in the house with you. Read the failure mode below twice.</p></div>`:''}
+
+    ${radar()}
+
+    <div class="card">
+      <div class="tag">The eight threads</div>
+      <div class="tlist">
+        ${THREADS.map(t=>`
+          <div>
+            <div class="trow">
+              <span class="tname">${t.name}</span>
+              <span class="tbar"><i data-w="${T[t.k]}" style="background:${t.c}"></i></span>
+              <span class="tval">${Math.round(T[t.k])}</span>
+            </div>
+            <div class="tnote" style="margin:-4px 0 8px">${NOTE[t.k](T[t.k])}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag">Why</div>
+      <p>Three threads decided this, in this order:</p>
+      ${drivers.map(d=>`<p><em>${d.name} — ${Math.round(d.v)}.</em> ${NOTE[d.k](d.v)}</p>`).join('')}
+      <p>Your runner-up is <em>${DOOR[second].n}</em>. That matters: under stress, people do not stay at their strongest door. They drift to their second.</p>
+    </div>
+
+    <div class="card warn">
+      <div class="tag">Your failure mode</div>
+      <h3 style="margin-bottom:14px;color:var(--rose)">${f.n}</h3>
+      ${f.p.map(p=>`<p>${p}</p>`).join('')}
+    </div>
+
+    <div class="card good">
+      <div class="tag">Your ask — what to actually look for</div>
+      ${ask.map(a=>`<p>${a}</p>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="tag">The invoice</div>
+      <p>Every door has a price. Yours:</p>
+      <p><em>${INVOICE[top]}</em></p>
+      <p class="muted" style="font-family:var(--sans);font-size:.88rem">A reading that only lists benefits is flattery. This one isn't.</p>
+    </div>
+
+    <div class="card ${T.RDY<45?'warn':'good'}">
+      <div class="tag">Readiness — asked separately, on purpose</div>
+      <p><em>${Math.round(T.RDY)} / 100.</em> ${NOTE.RDY(T.RDY)}</p>
+      ${T.RDY<45?`<p>Readiness and path are different questions, and almost every tool in this space confuses them. You can be a textbook ${DOOR[top].n} temperament and be completely unready to marry anyone. That is where you are. It is not a flaw. It is a date on a calendar you have not reached.</p>`
+      :`<p>Path tells you which door. Readiness tells you whether to walk through it this year. Yours says you can.</p>`}
+    </div>
+
+    ${T.PRS>40?`<div class="card">
+      <div class="tag">The mirror — what it caught</div>
+      <p>Across six scenarios, the average distance between <em>what you want</em> and <em>what you believe is expected of ${expectedOf()}</em> was <em>${Math.round(T.PRS/1.55)} points</em>.</p>
+      <p>That gap is not an opinion about gender. It is a measurement of how much of your marriage decision is being made by someone who will not be at the wedding.</p>
+      <p>The widest gap you carried: <em>"${S.mirrors.slice().sort((a,b)=>b.d-a.d)[0].t}"</em></p>
+    </div>`:''}
+
+    ${S.external?`<div class="card warn"><div class="tag">One more thing</div>
+      <p>You said the choice would change if nobody were watching. Everything in this reading still holds — but read it knowing that the person who answered these questions was not entirely alone in the room.</p></div>`:''}
+
+    <div class="foot">
+      The two threads behind this page met tonight because you finished.<br>
+      This is not a prediction. It is a structured mirror — it told you what you already told it,<br>
+      arranged so you could finally see the shape.<br><br>
+      ${archived?'<span style="opacity:.55">This reading was archived on this device. It appears in the admin dashboard.</span><br>':''}
+      <span style="opacity:.6">Impulse · The Bridge · ${new Date().getFullYear()}</span>
+    </div>
+
+    <div class="acts">
+      <button class="btn" onclick="window.print()">Save this reading</button>
+      <button class="btn ghost" onclick="location.reload()">Begin again</button>
+    </div>
+    <div style="height:60px"></div>
+  </div>`;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.dbar i, .tbar i').forEach(n=>{
+      n.style.width=Math.min(100,+n.dataset.w)+'%';
+    });
+  },260);
+}
+
+/* ── boot ────────────────────────────────────────────────────── */
+go(scrIntro);
+</script>
+</body>
+</html>

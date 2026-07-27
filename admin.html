@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bridge — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0611; --panel:#140c1d; --panel2:#1b1127;
+  --ink:#f4ece6; --mut:#9c8794; --dim:#6d5b68;
+  --gold:#d9a860; --rose:#e0577a; --ind:#9d86e8; --teal:#4f9c96; --wine:#7a2338;
+  --line:rgba(255,255,255,.07);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Inter',-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:
+  radial-gradient(1000px 600px at 10% -10%, rgba(122,35,56,.18), transparent 60%),
+  radial-gradient(800px 600px at 95% 105%, rgba(106,86,168,.16), transparent 60%),
+  var(--bg);
+  background-attachment:fixed;color:var(--ink);font-family:var(--sans);font-weight:300;
+  min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 24px 90px}
+
+header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:30px}
+h1{font-family:var(--serif);font-weight:300;font-size:2.4rem;line-height:1}
+h1 span{color:var(--gold)}
+.kicker{font-size:.62rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:10px}
+.sub{color:var(--mut);font-size:.85rem;margin-top:8px}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);background:transparent;border:1px solid rgba(217,168,96,.35);
+  padding:10px 16px;cursor:pointer;transition:.3s;border-radius:2px}
+.btn:hover{background:rgba(217,168,96,.1);border-color:var(--gold)}
+.btn.danger{color:var(--rose);border-color:rgba(224,87,122,.35)}
+.btn.danger:hover{background:rgba(224,87,122,.1);border-color:var(--rose)}
+.btn.ghost{color:var(--mut);border-color:var(--line)}
+
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px 18px 16px}
+.kpi .l{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+.kpi .v{font-family:var(--serif);font-size:2.1rem;font-weight:300;line-height:1}
+.kpi .s{font-size:.7rem;color:var(--dim);margin-top:8px}
+.kpi.gold .v{color:var(--gold)} .kpi.rose .v{color:var(--rose)} .kpi.ind .v{color:var(--ind)} .kpi.teal .v{color:var(--teal)}
+
+.row2{grid-template-columns:1fr 1fr;margin-bottom:14px}
+.row3{grid-template-columns:1.2fr 1fr 1fr;margin-bottom:14px}
+@media(max-width:900px){.row2,.row3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:22px}
+.card h3{font-family:var(--serif);font-weight:400;font-size:1.15rem;margin-bottom:4px}
+.card .hint{font-size:.7rem;color:var(--dim);margin-bottom:18px}
+
+/* charts */
+.hbar{margin-bottom:12px}
+.hbar .t{display:flex;justify-content:space-between;font-size:.74rem;color:var(--mut);margin-bottom:6px}
+.hbar .t b{color:var(--ink);font-weight:400}
+.hbar .bar{height:6px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.hbar .bar i{display:block;height:100%;border-radius:4px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:.7rem;color:var(--mut)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* table */
+.tablecard{padding:0;overflow:hidden}
+.tablehead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 22px 14px}
+input.search{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+  font-family:var(--sans);font-size:.82rem;padding:9px 14px;border-radius:3px;outline:none;width:220px}
+input.search:focus{border-color:rgba(217,168,96,.5)}
+select{background:var(--panel2);border:1px solid var(--line);color:var(--mut);font-size:.78rem;
+  padding:9px 10px;border-radius:3px;outline:none}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:500;
+  text-align:left;padding:12px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--gold)}
+td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr.datarow{cursor:pointer;transition:.2s}
+tr.datarow:hover{background:rgba(217,168,96,.05)}
+.pill{display:inline-block;font-size:.66rem;letter-spacing:.06em;padding:4px 11px;border-radius:20px;white-space:nowrap}
+.p-love{background:rgba(224,87,122,.14);color:#f0899f;border:1px solid rgba(224,87,122,.3)}
+.p-arranged{background:rgba(157,134,232,.13);color:#b6a5ef;border:1px solid rgba(157,134,232,.3)}
+.p-bridge{background:rgba(217,168,96,.13);color:#e5bf7f;border:1px solid rgba(217,168,96,.3)}
+.p-conf{background:rgba(255,255,255,.05);color:var(--mut);border:1px solid var(--line)}
+.p-warn{background:rgba(224,87,122,.1);color:#e58ba0;border:1px solid rgba(224,87,122,.25)}
+.mini{display:inline-flex;gap:2px;align-items:flex-end;height:20px}
+.mini i{width:4px;border-radius:1px;display:block}
+.num{font-family:var(--serif);font-size:1.05rem}
+
+/* detail drawer */
+.drawer{background:var(--panel2);border-top:1px solid rgba(217,168,96,.2);padding:26px 24px}
+.drawer h4{font-family:var(--serif);font-weight:400;font-size:1.3rem;margin-bottom:4px}
+.drawer .meta{font-size:.72rem;color:var(--dim);margin-bottom:20px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.dgrid{grid-template-columns:1fr}}
+.dsec{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:4px;padding:18px}
+.dsec .tg{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:14px}
+.explain{width:100%;border-collapse:collapse;font-size:.76rem}
+.explain th{font-size:.58rem;padding:7px 8px;cursor:default;border-top:none}
+.explain th:hover{color:var(--dim)}
+.explain td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.explain .tot td{border-top:1px solid rgba(217,168,96,.3);color:var(--gold);font-weight:400}
+.explain .neg{color:var(--rose)}
+.ansrow{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.78rem;line-height:1.5}
+.ansrow .q{color:var(--dim)}
+.ansrow .a{color:var(--ink)}
+.mrow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:.76rem;
+  border-bottom:1px solid rgba(255,255,255,.04);color:var(--mut)}
+.mrow b{font-family:var(--serif);font-size:.95rem;color:var(--gold);font-weight:400;flex:0 0 auto}
+
+.empty{padding:70px 30px;text-align:center;color:var(--dim)}
+.empty h3{font-family:var(--serif);font-weight:300;font-size:1.6rem;color:var(--mut);margin-bottom:12px}
+.footer{margin-top:40px;text-align:center;color:var(--dim);font-size:.7rem;line-height:1.9}
+.donutwrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="kicker">Impulse · Administration</div>
+    <h1>The Bridge <span>— Reading Archive</span></h1>
+    <div class="sub" id="subline">—</div>
+  </div>
+  <div class="tools">
+    <button class="btn" onclick="exportJSON()">Export JSON</button>
+    <button class="btn" onclick="document.getElementById('imp').click()">Import JSON</button>
+    <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn ghost" onclick="seedDemo()">Seed demo data</button>
+    <button class="btn danger" onclick="clearAll()">Clear all</button>
+  </div>
+</header>
+
+<div id="app"></div>
+
+<div class="footer">
+  Storage: this browser's local archive (<code>bridge_records_v1</code>). Every completed reading in
+  <em>index.html</em> on this device is written here automatically.<br>
+  Use Export / Import to move the archive between devices. Open both files from the same folder in the same browser.
+</div>
+</div>
+
+<script>
+/* ═════════════════════════════════════════════════════════════
+   THE BRIDGE — ADMIN
+   Reads the archive the game writes, and explains — term by
+   term — how the engine produced every user's scores.
+   ═════════════════════════════════════════════════════════════ */
+const STORE_KEY='bridge_records_v1';
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+
+const THREADS=[
+  {k:'AUT',name:'Self-Authorship',c:'#d9a860'},
+  {k:'KIN',name:'Kinship Pull',c:'#e0577a'},
+  {k:'ANX',name:'Anxious Wiring',c:'#c96f4a'},
+  {k:'AVO',name:'Avoidant Wiring',c:'#5f7fb8'},
+  {k:'AMB',name:'Ambiguity Tolerance',c:'#4f9c96'},
+  {k:'REG',name:'Regret of Inaction',c:'#9d86e8'},
+  {k:'PRS',name:'Inherited Pressure',c:'#b8556e'},
+  {k:'RDY',name:'Readiness',c:'#cbb27a'}
+];
+const DOORC={love:'#e0577a',arranged:'#9d86e8',bridge:'#d9a860'};
+const DOORN={love:'The Chosen',arranged:'The Given',bridge:'The Bridge'};
+const DOORS={love:'Love marriage',arranged:'Arranged marriage',bridge:'Assisted / hybrid'};
+
+/* ── the exact engine, mirrored, decomposed for explanation ── */
+function explain(T){
+  const SEC  = clamp(100 - Math.max(T.ANX,T.AVO) + 8);
+  const SECL = clamp(100 - (0.65*T.AVO + 0.45*T.ANX));
+  const rows={
+    love:[
+      ['Self-Authorship ×.30',        .30*T.AUT],
+      ['Ambiguity Tolerance ×.20',    .20*T.AMB],
+      ['Regret of Inaction ×.20',     .20*T.REG],
+      ['Freedom from Kin ×.15',       .15*(100-T.KIN)],
+      ['Security (love-weighted) ×.15',.15*SECL],
+      ['Inherited-pressure tax −.14', -(0.14*T.PRS)]
+    ],
+    arranged:[
+      ['Kinship Pull ×.30',           .30*T.KIN],
+      ['Comfort in Certainty ×.20',   .20*(100-T.AMB)],
+      ['Action-regret leaning ×.20',  .20*(100-T.REG)],
+      ['Ease with Guidance ×.15',     .15*(100-T.AUT)],
+      ['Security ×.15',               .15*SEC]
+    ],
+    bridge:[
+      ['Both needs held (min AUT,KIN) ×.45', .45*Math.min(T.AUT,T.KIN)],
+      ['Balance of the two ×.25',     .25*(100-Math.abs(T.AUT-T.KIN))],
+      ['Ambiguity Tolerance ×.15',    .15*T.AMB],
+      ['Security ×.15',               .15*SEC],
+      ['Inherited-pressure tax −.05', -(0.05*T.PRS)]
+    ]
+  };
+  const raw={};
+  for(const d in rows) raw[d]=rows[d].reduce((s,r)=>s+r[1],0);
+  const sum=raw.love+raw.arranged+raw.bridge;
+  const pct={love:raw.love/sum*100,arranged:raw.arranged/sum*100,bridge:raw.bridge/sum*100};
+  return {rows,raw,pct,SEC,SECL};
+}
+
+/* ── storage ── */
+const load=()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}catch(e){return[]}};
+const save=d=>localStorage.setItem(STORE_KEY,JSON.stringify(d));
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(load(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bridge-archive-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+function importJSON(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const inc=JSON.parse(r.result);
+    if(!Array.isArray(inc)) throw 0;
+    const cur=load(), ids=new Set(cur.map(x=>x.id));
+    inc.forEach(x=>{if(x&&x.id&&!ids.has(x.id))cur.push(x);});
+    save(cur); render();
+  }catch(e){alert('Not a valid archive file.')}};
+  r.readAsText(f);
+}
+function clearAll(){
+  if(confirm('Delete every archived reading on this device? Export first if you need them.')){
+    localStorage.removeItem(STORE_KEY); render();
+  }
+}
+
+/* ── demo seed (14 plausible profiles, scored by the real engine) ── */
+function seedDemo(){
+  const names=[['Ayesha','A woman','22–26'],['Rohan','A man','27–31'],['Fatima','A woman','22–26'],
+   ['Daniyal','A man','22–26'],['Meera','A woman','27–31'],['Omar','A man','32–37'],
+   ['Zara','A woman','Under 22'],['Arjun','A man','27–31'],['Noor','Neither / other','22–26'],
+   ['Imran','A man','38+'],['Priya','A woman','27–31'],['Hassan','A man','22–26'],
+   ['Sana','A woman','32–37'],['Kabir','A man','Under 22']];
+  const R=(a,b)=>Math.round(a+Math.random()*(b-a));
+  const cur=load();
+  names.forEach((n,i)=>{
+    const archetype=i%4;
+    let T;
+    if(archetype===0)      T={AUT:R(68,92),KIN:R(15,40),ANX:R(45,80),AVO:R(30,60),AMB:R(55,80),REG:R(60,88),PRS:R(10,40),RDY:R(40,75)};
+    else if(archetype===1) T={AUT:R(20,45),KIN:R(65,95),ANX:R(15,45),AVO:R(15,45),AMB:R(15,45),REG:R(15,45),PRS:R(5,30),RDY:R(55,90)};
+    else if(archetype===2) T={AUT:R(55,75),KIN:R(55,80),ANX:R(30,60),AVO:R(25,55),AMB:R(45,70),REG:R(40,65),PRS:R(20,55),RDY:R(45,80)};
+    else                   T={AUT:R(40,70),KIN:R(40,75),ANX:R(40,80),AVO:R(55,90),AMB:R(25,55),REG:R(35,65),PRS:R(45,85),RDY:R(15,44)};
+    const ex=explain(T);
+    const rank=Object.keys(ex.pct).sort((a,b)=>ex.pct[b]-ex.pct[a]);
+    const gap=ex.pct[rank[0]]-ex.pct[rank[1]];
+    const conf=gap>14?'Clear':gap>6?'Leaning':'Split';
+    const coh=R(35,95);
+    let fail='The drift';
+    if(T.RDY<45)fail='Neither door yet';
+    else if(coh<50)fail='The unnamed fight';
+    else if(rank[0]==='love'&&T.ANX>60)fail='Disillusionment through intensity';
+    else if(rank[0]==='love'&&T.PRS>35)fail='The price you did not read';
+    else if(rank[0]==='arranged'&&T.AUT>60)fail='The quiet resignation';
+    else if(rank[0]==='arranged'&&T.AVO>60)fail='Two polite strangers';
+    else if(rank[0]==='bridge'&&T.AMB<40)fail='Paralysis at the bridge';
+    cur.push({
+      id:'demo'+Date.now().toString(36)+i, ts:new Date(Date.now()-R(0,45)*864e5).toISOString(),
+      name:n[0],gender:n[1],age:n[2],familyVolume:R(20,90),
+      T,coh,external:Math.random()<.2,
+      pct:{love:+ex.pct.love.toFixed(2),arranged:+ex.pct.arranged.toFixed(2),bridge:+ex.pct.bridge.toFixed(2)},
+      rank,gap:+gap.toFixed(2),conf,fail,
+      mirrors:[{t:'Who moves first?',a:R(10,90),b:R(10,90)},{t:'Who packs?',a:R(10,90),b:R(10,90)},
+               {t:'Money asymmetry',a:R(10,90),b:R(10,90)},{t:'Feeling in a fight',a:R(10,90),b:R(10,90)},
+               {t:'The clock',a:R(10,90),b:R(10,90)},{t:'Whose parents',a:R(10,90),b:R(10,90)}]
+        .map(m=>({...m,d:Math.abs(m.a-m.b)})),
+      answers:[{q:'(demo record — answers not captured)',a:'—'}]
+    });
+  });
+  save(cur); render();
+}
+
+/* ── ui state ── */
+let sortKey='ts', sortDir=-1, filterDoor='all', search='', openId=null;
+
+const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'2-digit'});
+const avg=(arr,f)=>arr.length? arr.reduce((s,x)=>s+f(x),0)/arr.length : 0;
+
+function kpis(recs){
+  const doors={love:0,arranged:0,bridge:0};
+  recs.forEach(r=>doors[r.rank[0]]++);
+  const splitN=recs.filter(r=>r.conf==='Split').length;
+  const unready=recs.filter(r=>r.T.RDY<45).length;
+  return `
+  <div class="grid kpis">
+    <div class="kpi gold"><div class="l">Total readings</div><div class="v">${recs.length}</div>
+      <div class="s">${splitN} split verdicts</div></div>
+    <div class="kpi rose"><div class="l">The Chosen</div><div class="v">${doors.love}</div><div class="s">love marriage</div></div>
+    <div class="kpi ind"><div class="l">The Given</div><div class="v">${doors.arranged}</div><div class="s">arranged marriage</div></div>
+    <div class="kpi gold"><div class="l">The Bridge</div><div class="v">${doors.bridge}</div><div class="s">assisted / hybrid</div></div>
+    <div class="kpi teal"><div class="l">Avg readiness</div><div class="v">${Math.round(avg(recs,r=>r.T.RDY))}</div>
+      <div class="s">${unready} below the gate (45)</div></div>
+    <div class="kpi rose"><div class="l">Avg inherited pressure</div><div class="v">${Math.round(avg(recs,r=>r.T.PRS))}</div>
+      <div class="s">mirror gap, scaled</div></div>
+  </div>`;
+}
+
+function hbar(label,val,max,color,extra=''){
+  return `<div class="hbar"><div class="t"><span>${label}</span><b>${extra||Math.round(val)}</b></div>
+    <div class="bar"><i style="width:${max?val/max*100:0}%;background:${color}"></i></div></div>`;
+}
+
+function donut(recs){
+  const doors={love:0,arranged:0,bridge:0};
+  recs.forEach(r=>doors[r.rank[0]]++);
+  const total=recs.length||1;
+  let acc=0, segs='';
+  ['love','arranged','bridge'].forEach(d=>{
+    const frac=doors[d]/total, C=2*Math.PI*54;
+    segs+=`<circle r="54" cx="70" cy="70" fill="none" stroke="${DOORC[d]}" stroke-width="14"
+      stroke-dasharray="${frac*C} ${C}" stroke-dashoffset="${-acc*C}"
+      transform="rotate(-90 70 70)" opacity=".9"/>`;
+    acc+=frac;
+  });
+  return `<div class="donutwrap">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle r="54" cx="70" cy="70" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="14"/>
+      ${segs}
+      <text x="70" y="66" text-anchor="middle" fill="#f4ece6" font-family="Cormorant Garamond" font-size="26">${recs.length}</text>
+      <text x="70" y="84" text-anchor="middle" fill="#6d5b68" font-size="8" letter-spacing="2">READINGS</text>
+    </svg>
+    <div style="flex:1;min-width:180px">
+      ${['love','arranged','bridge'].map(d=>hbar(DOORN[d]+' · '+DOORS[d],doors[d],total,DOORC[d],doors[d]+' ('+Math.round(doors[d]/total*100)+'%)')).join('')}
+    </div>
+  </div>`;
+}
+
+function threadChart(recs){
+  const men=recs.filter(r=>r.gender==='A man'), women=recs.filter(r=>r.gender==='A woman');
+  return THREADS.map(t=>{
+    const all=avg(recs,r=>r.T[t.k]), m=avg(men,r=>r.T[t.k]), w=avg(women,r=>r.T[t.k]);
+    return `<div class="hbar">
+      <div class="t"><span style="color:${t.c}">${t.name}</span>
+        <b>${Math.round(all)}${(men.length&&women.length)?` <span style="color:var(--dim);font-weight:300">· M ${Math.round(m)} / W ${Math.round(w)}</span>`:''}</b></div>
+      <div class="bar"><i style="width:${all}%;background:${t.c}"></i></div>
+    </div>`;
+  }).join('');
+}
+
+function readinessHist(recs){
+  const bins=[0,0,0,0,0];
+  recs.forEach(r=>bins[Math.min(4,Math.floor(r.T.RDY/20))]++);
+  const mx=Math.max(...bins,1);
+  const labels=['0–19','20–39','40–59','60–79','80–100'];
+  return bins.map((b,i)=>hbar('Readiness '+labels[i],b,mx,i<3?'#e0577a':'#4f9c96',b+'')).join('')
+   + `<div class="legend"><span><i style="background:#e0577a"></i>below / near the gate</span><span><i style="background:#4f9c96"></i>ready band</span></div>`;
+}
+
+function miniThreads(T){
+  return `<span class="mini">${THREADS.map(t=>
+    `<i style="height:${Math.max(2,T[t.k]/100*20)}px;background:${t.c}" title="${t.name}: ${Math.round(T[t.k])}"></i>`).join('')}</span>`;
+}
+
+function explainTable(rec){
+  const ex=explain(rec.T);
+  return `<table class="explain">
+    <tr><th>Component of the score</th><th style="text-align:right">Points</th></tr>
+    ${['love','arranged','bridge'].map(d=>`
+      <tr><td colspan="2" style="padding-top:12px;color:${DOORC[d]};font-size:.66rem;letter-spacing:.2em;text-transform:uppercase">${DOORN[d]}</td></tr>
+      ${ex.rows[d].map(r=>`<tr><td style="color:var(--mut)">${r[0]}</td>
+        <td style="text-align:right" class="${r[1]<0?'neg':''}">${r[1]>=0?'+':''}${r[1].toFixed(1)}</td></tr>`).join('')}
+      <tr class="tot"><td>Raw total → normalised share</td>
+        <td style="text-align:right">${ex.raw[d].toFixed(1)} → ${ex.pct[d].toFixed(1)}%</td></tr>`).join('')}
+  </table>
+  <p style="font-size:.7rem;color:var(--dim);margin-top:12px;line-height:1.7">
+  The three raw totals are normalised to shares summing to 100%. The verdict is the highest share; confidence
+  comes from the gap to the runner-up (&gt;14 Clear, 6–14 Leaning, &lt;6 Split). Security terms:
+  SEC ${ex.SEC.toFixed(0)} (general), SEC<sub>L</sub> ${ex.SECL.toFixed(0)} (avoidance-weighted, used by The Chosen).
+  Recorded shares from the live session: ${rec.pct.love}% / ${rec.pct.arranged}% / ${rec.pct.bridge}%.</p>`;
+}
+
+function drawer(rec){
+  const win=rec.rank[0];
+  const worst=(rec.mirrors||[]).slice().sort((a,b)=>b.d-a.d)[0];
+  return `<tr><td colspan="8" style="padding:0"><div class="drawer">
+    <h4>${rec.name} — <span style="color:${DOORC[win]}">${DOORN[win]}</span> (${rec.pct[win].toFixed(1)}%, ${rec.conf})</h4>
+    <div class="meta">${rec.gender} · ${rec.age} · played ${fmtD(rec.ts)} · family volume ${rec.familyVolume}/100 ·
+      coherence ${rec.coh}${rec.external?' · <span style="color:var(--rose)">flagged: choice changes if unobserved</span>':''}</div>
+    <div class="dgrid">
+      <div>
+        <div class="dsec" style="margin-bottom:16px">
+          <div class="tg">The eight threads</div>
+          ${THREADS.map(t=>hbar(t.name,rec.T[t.k],100,t.c)).join('')}
+        </div>
+        <div class="dsec" style="margin-bottom:16px">
+          <div class="tg">Doors</div>
+          ${rec.rank.map(d=>hbar(DOORN[d],rec.pct[d],100,DOORC[d],rec.pct[d].toFixed(1)+'%')).join('')}
+          <div style="font-size:.74rem;color:var(--mut);margin-top:10px">Failure mode: <span style="color:var(--rose)">${rec.fail}</span> · gap to runner-up ${rec.gap} pts</div>
+        </div>
+        <div class="dsec">
+          <div class="tg">Mirror gaps (want vs expected)</div>
+          ${(rec.mirrors||[]).map(m=>`<div class="mrow"><span>${m.t}</span><b>Δ ${m.d}</b></div>`).join('')}
+          ${worst?`<div style="font-size:.7rem;color:var(--dim);margin-top:10px">Widest gap: "${worst.t}" — the loudest inherited script this user carries.</div>`:''}
+        </div>
+      </div>
+      <div>
+        <div class="dsec" style="margin-bottom:16px">
+          <div class="tg">How the AI scored it — full arithmetic</div>
+          ${explainTable(rec)}
+        </div>
+        <div class="dsec">
+          <div class="tg">Answers given (${(rec.answers||[]).length})</div>
+          <div style="max-height:260px;overflow:auto">
+          ${(rec.answers||[]).map(a=>`<div class="ansrow"><div class="q">${a.q}</div><div class="a">→ ${a.a}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></td></tr>`;
+}
+
+function tableCard(recs){
+  let rows=recs.filter(r=>{
+    if(filterDoor!=='all'&&r.rank[0]!==filterDoor)return false;
+    if(search&&!(r.name||'').toLowerCase().includes(search.toLowerCase()))return false;
+    return true;
+  });
+  const val=r=>{
+    switch(sortKey){
+      case 'name':return (r.name||'').toLowerCase();
+      case 'door':return r.rank[0];
+      case 'score':return r.pct[r.rank[0]];
+      case 'rdy':return r.T.RDY;
+      case 'prs':return r.T.PRS;
+      default:return r.ts;
+    }};
+  rows.sort((a,b)=>val(a)>val(b)?sortDir:-sortDir);
+
+  const th=(k,l)=>`<th onclick="setSort('${k}')">${l}${sortKey===k?(sortDir>0?' ↑':' ↓'):''}</th>`;
+  return `<div class="card tablecard">
+    <div class="tablehead">
+      <h3>Users · ${rows.length} shown</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input class="search" placeholder="search name…" value="${search}" oninput="search=this.value;render()">
+        <select onchange="filterDoor=this.value;render()">
+          <option value="all" ${filterDoor==='all'?'selected':''}>All doors</option>
+          <option value="love" ${filterDoor==='love'?'selected':''}>The Chosen</option>
+          <option value="arranged" ${filterDoor==='arranged'?'selected':''}>The Given</option>
+          <option value="bridge" ${filterDoor==='bridge'?'selected':''}>The Bridge</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow:auto">
+    <table>
+      <tr>${th('name','User')}${th('ts','Date')}<th style="cursor:default">Profile</th>${th('door','Predicted door')}${th('score','Score')}<th style="cursor:default">Confidence</th>${th('rdy','RDY')}${th('prs','PRS')}</tr>
+      ${rows.map(r=>{
+        const win=r.rank[0];
+        return `<tr class="datarow" onclick="toggle('${r.id}')">
+          <td><b style="font-weight:500">${r.name||'—'}</b><div style="font-size:.68rem;color:var(--dim)">${r.gender||''} · ${r.age||''}</div></td>
+          <td style="color:var(--mut)">${fmtD(r.ts)}</td>
+          <td>${miniThreads(r.T)}</td>
+          <td><span class="pill p-${win}">${DOORN[win]}</span></td>
+          <td class="num">${r.pct[win].toFixed(1)}%</td>
+          <td><span class="pill ${r.conf==='Split'?'p-warn':'p-conf'}">${r.conf}</span></td>
+          <td class="num" style="color:${r.T.RDY<45?'var(--rose)':'var(--teal)'}">${Math.round(r.T.RDY)}</td>
+          <td class="num" style="color:${r.T.PRS>45?'var(--rose)':'var(--mut)'}">${Math.round(r.T.PRS)}</td>
+        </tr>${openId===r.id?drawer(r):''}`;
+      }).join('')}
+    </table></div>
+  </div>`;
+}
+
+function setSort(k){ if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=-1;} render(); }
+function toggle(id){ openId=openId===id?null:id; render(); }
+
+function render(){
+  const recs=load();
+  document.getElementById('subline').textContent =
+    recs.length? `${recs.length} archived readings · last ${fmtD(recs[recs.length-1].ts)}` : 'no readings archived yet';
+  const app=document.getElementById('app');
+  if(!recs.length){
+    app.innerHTML=`<div class="card empty">
+      <h3>The archive is empty</h3>
+      <p>Play <em>index.html</em> (the main site) in this same browser and every completed reading appears here automatically.<br>
+      Or press <b>Seed demo data</b> above to explore the dashboard with 14 generated profiles.</p></div>`;
+    return;
+  }
+  app.innerHTML = kpis(recs) + `
+    <div class="grid row3">
+      <div class="card"><h3>Verdicts</h3><div class="hint">which door the engine predicted, across all users</div>${donut(recs)}</div>
+      <div class="card"><h3>Thread averages</h3><div class="hint">population mean per thread — split by gender when both present</div>${threadChart(recs)}</div>
+      <div class="card"><h3>Readiness distribution</h3><div class="hint">the gate sits at 45 — below it, path advice is overridden</div>${readinessHist(recs)}</div>
+    </div>` + tableCard(recs);
+}
+render();
+</script>
+</body>
+</html>
