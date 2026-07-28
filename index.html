@@ -907,6 +907,20 @@ const NOTE={
 
 /* ── storage: every completed reading is archived ────────────── */
 const STORE_KEY='bridge_records_v1';
+
+/* ── cloud database (Firebase Firestore, REST — no SDK needed) ──
+   Fill in projectId + apiKey from your Firebase project to enable
+   central storage. Leave empty and the game still works, local-only. */
+const CLOUD={projectId:'',apiKey:''};
+const cloudOn=()=>!!(CLOUD.projectId&&CLOUD.apiKey);
+function sendToCloud(rec){
+  if(!cloudOn())return;
+  fetch('https://firestore.googleapis.com/v1/projects/'+CLOUD.projectId+
+        '/databases/(default)/documents/readings?documentId='+rec.id+'&key='+CLOUD.apiKey,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fields:{json:{stringValue:JSON.stringify(rec)},ts:{stringValue:rec.ts}}})
+  }).catch(function(){});
+}
 function saveRecord(r,f){
   try{
     const rec={
@@ -922,6 +936,7 @@ function saveRecord(r,f){
     const all=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
     all.push(rec);
     localStorage.setItem(STORE_KEY,JSON.stringify(all));
+    sendToCloud(rec);
     return true;
   }catch(e){ return false; }
 }
@@ -1027,7 +1042,7 @@ function finish(){
       The two threads behind this page met tonight because you finished.<br>
       This is not a prediction. It is a structured mirror — it told you what you already told it,<br>
       arranged so you could finally see the shape.<br><br>
-      ${archived?'<span style="opacity:.55">This reading was archived on this device. It appears in the admin dashboard.</span><br>':''}
+      ${archived?'<span style="opacity:.55">This reading was archived '+(cloudOn()?'to the central database':'on this device')+'. It appears in the admin dashboard.</span><br>':''}
       <span style="opacity:.6">Impulse · The Bridge · ${new Date().getFullYear()}</span>
     </div>
 

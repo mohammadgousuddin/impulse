@@ -127,7 +127,7 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
     <div class="sub" id="subline">—</div>
   </div>
   <div class="tools">
-    <button class="btn" onclick="exportJSON()">Export JSON</button>
+    <button class="btn" onclick="refreshCloud()">Refresh</button>\n    <button class="btn" onclick="exportJSON()">Export JSON</button>
     <button class="btn" onclick="document.getElementById('imp').click()">Import JSON</button>
     <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn ghost" onclick="seedDemo()">Seed demo data</button>
@@ -151,6 +151,34 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
    term — how the engine produced every user's scores.
    ═════════════════════════════════════════════════════════════ */
 const STORE_KEY='bridge_records_v1';
+
+/* ── cloud database (Firebase Firestore, REST) — same config as index.html ── */
+const CLOUD={projectId:'',apiKey:''};
+const cloudOn=()=>!!(CLOUD.projectId&&CLOUD.apiKey);
+let cloudRecs=[], cloudStatus=null;
+async function fetchCloud(){
+  if(!cloudOn()){cloudStatus='not configured';return;}
+  cloudStatus='connecting\u2026';
+  try{
+    let out=[],token='';
+    do{
+      const u='https://firestore.googleapis.com/v1/projects/'+CLOUD.projectId+
+        '/databases/(default)/documents/readings?pageSize=300&key='+CLOUD.apiKey+(token?'&pageToken='+token:'');
+      const r=await fetch(u); const j=await r.json();
+      if(j.error) throw j.error;
+      (j.documents||[]).forEach(d=>{try{out.push(JSON.parse(d.fields.json.stringValue))}catch(e){}});
+      token=j.nextPageToken||'';
+    }while(token);
+    cloudRecs=out; cloudStatus='connected \u00b7 '+out.length+' cloud record'+(out.length===1?'':'s');
+  }catch(e){cloudStatus='error \u2014 check config / rules';}
+}
+const validRec=r=>r&&r.id&&r.T&&r.pct&&Array.isArray(r.rank)&&r.rank.length===3;
+function allRecords(){
+  const m=new Map();
+  cloudRecs.concat(load()).forEach(r=>{if(validRec(r)&&!m.has(r.id))m.set(r.id,r);});
+  return [...m.values()].sort((a,b)=>a.ts<b.ts?-1:1);
+}
+function refreshCloud(){fetchCloud().then(render);}
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
 
 const THREADS=[
@@ -207,7 +235,7 @@ const load=()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}cat
 const save=d=>localStorage.setItem(STORE_KEY,JSON.stringify(d));
 
 function exportJSON(){
-  const blob=new Blob([JSON.stringify(load(),null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify(allRecords(),null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download='bridge-archive-'+new Date().toISOString().slice(0,10)+'.json';
@@ -226,7 +254,7 @@ function importJSON(ev){
   r.readAsText(f);
 }
 function clearAll(){
-  if(confirm('Delete every archived reading on this device? Export first if you need them.')){
+  if(confirm('Delete every locally archived reading on this device? (Cloud records are kept.) Export first if you need them.')){
     localStorage.removeItem(STORE_KEY); render();
   }
 }
@@ -470,9 +498,9 @@ function setSort(k){ if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=-1;} ren
 function toggle(id){ openId=openId===id?null:id; render(); }
 
 function render(){
-  const recs=load();
+  const recs=allRecords();
   document.getElementById('subline').textContent =
-    recs.length? `${recs.length} archived readings · last ${fmtD(recs[recs.length-1].ts)}` : 'no readings archived yet';
+    (recs.length? `${recs.length} archived readings · last ${fmtD(recs[recs.length-1].ts)}` : 'no readings archived yet') + (cloudStatus?` · cloud: ${cloudStatus}`:'');
   const app=document.getElementById('app');
   if(!recs.length){
     app.innerHTML=`<div class="card empty">
@@ -489,6 +517,7 @@ function render(){
     </div>` + tableCard(recs);
 }
 render();
+fetchCloud().then(render);
 </script>
 </body>
 </html>

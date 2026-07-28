@@ -23,7 +23,23 @@ Once GitHub Pages is enabled (see below):
 
 ## How the data works
 
-There is no server. Each completed reading is saved to `localStorage` (key `bridge_records_v1`) in the visitor's own browser. The admin dashboard shows readings **from the same browser only** — so as the site owner, you see readings played on your device, and each visitor's data stays private on theirs. To collect readings from someone else, have them press **Export JSON** in `admin.html` on their device and send you the file; import it on yours.
+Two layers:
+
+1. **Local** — every completed reading is saved to `localStorage` in the visitor's own browser (works even offline).
+2. **Cloud (central database)** — when Firebase is configured, every reading is also sent to a Firestore database, so the admin dashboard shows readings from **all** visitors, from any device.
+
+### Connect the database (one-time, ~5 minutes)
+
+1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Create project** (name it `impulse`, Analytics off).
+2. In the project: **Build → Firestore Database → Create database** → Start in **test mode** → region nearest you → Enable.
+3. **Project settings (gear) → General** → copy the **Project ID** and **Web API Key**.
+4. In both `index.html` and `admin.html`, find the line near the top of the script:
+   `const CLOUD={projectId:'',apiKey:''};`
+   and paste your two values in. Commit the change.
+
+Done — new readings flow into the cloud, and `admin.html` merges cloud + local records automatically (Refresh button re-pulls).
+
+> Note: test-mode rules allow public read/write and expire after 30 days. For a class project that's fine; for longer use, set Firestore rules to allow `create` and `read` on `readings/**`.
 
 ## Publish on GitHub Pages
 
