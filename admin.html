@@ -115,9 +115,52 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
 .empty h3{font-family:var(--serif);font-weight:300;font-size:1.6rem;color:var(--mut);margin-bottom:12px}
 .footer{margin-top:40px;text-align:center;color:var(--dim);font-size:.7rem;line-height:1.9}
 .donutwrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+
+/* ── login gate ────────────────────────────────── */
+#gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:
+   radial-gradient(900px 600px at 20% -10%, rgba(122,35,56,.28), transparent 60%),
+   radial-gradient(800px 600px at 90% 110%, rgba(106,86,168,.24), transparent 60%),
+   var(--bg)}
+#gate .box{width:100%;max-width:390px;background:rgba(20,12,29,.72);border:1px solid var(--line);
+  border-radius:5px;padding:38px 34px;backdrop-filter:blur(8px);
+  box-shadow:0 40px 90px -50px rgba(0,0,0,.9);animation:gateIn .8s cubic-bezier(.2,.7,.2,1) both}
+@keyframes gateIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#gate .k{font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);opacity:.72;margin-bottom:14px}
+#gate h2{font-family:var(--serif);font-weight:300;font-size:1.95rem;line-height:1.1;margin-bottom:8px}
+#gate h2 span{color:var(--gold)}
+#gate .sub2{font-size:.78rem;color:var(--mut);line-height:1.6;margin-bottom:26px}
+#gate label{display:block;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold);opacity:.7;margin-bottom:9px}
+#gate input{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.16);
+  color:var(--ink);font-family:var(--serif);font-size:1.2rem;font-weight:300;padding:8px 0;
+  outline:none;transition:.3s;margin-bottom:24px}
+#gate input:focus{border-bottom-color:var(--gold)}
+#gate .btn{width:100%;padding:15px;margin-top:4px}
+#gate .err{color:var(--rose);font-size:.78rem;margin-top:16px;min-height:18px;line-height:1.5}
+#gate .note{margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:.66rem;color:var(--dim);line-height:1.7}
+.wrap{display:none}
+.wrap.on{display:block}
 </style>
 </head>
 <body>
+
+<div id="gate">
+  <form class="box" onsubmit="return tryLogin(event)">
+    <div class="k">Impulse · Administration</div>
+    <h2>The Bridge<br><span>Reading Archive</span></h2>
+    <div class="sub2">This archive holds people's answers about love, family and fear. Sign in to open it.</div>
+    <label for="uid">User ID</label>
+    <input id="uid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+    <label for="pwd">Password</label>
+    <input id="pwd" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">Enter</button>
+    <div class="err" id="gerr"></div>
+    <div class="note">Session ends when you close this tab.</div>
+  </form>
+</div>
+
 <div class="wrap">
 
 <header>
@@ -133,6 +176,7 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
     <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn ghost" onclick="seedDemo()">Seed demo data</button>
     <button class="btn danger" onclick="clearAll()">Clear all</button>
+    <button class="btn ghost" onclick="logout()">Log out</button>
   </div>
 </header>
 
@@ -517,8 +561,54 @@ function render(){
       <div class="card"><h3>Readiness distribution</h3><div class="hint">the gate sits at 45 — below it, path advice is overridden</div>${readinessHist(recs)}</div>
     </div>` + tableCard(recs);
 }
-render();
-fetchCloud().then(render);
+/* ── login gate ───────────────────────────────────────────────
+   Credentials are checked against a SHA-256 hash, so the password
+   is not sitting in the page source in plain text. Note this is a
+   client-side gate on a static site: it keeps casual visitors out,
+   but it is not server-grade security. */
+const AUTH_HASH='cc3a8f2569b0ff06167a22533ed7d3cacc0d15af20902eff08e12ec33279dba6';
+const SESSION_KEY='bridge_admin_session';
+
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function openDashboard(){
+  document.getElementById('gate').style.display='none';
+  document.querySelector('.wrap').classList.add('on');
+  render();
+  fetchCloud().then(render);
+}
+async function tryLogin(ev){
+  ev.preventDefault();
+  const u=document.getElementById('uid').value.trim();
+  const p=document.getElementById('pwd').value;
+  const err=document.getElementById('gerr');
+  err.textContent='';
+  let h;
+  try{ h=await sha256(u+':'+p); }
+  catch(e){ err.textContent='This browser blocked the security check. Open the page over https:// or localhost.'; return false; }
+  if(h===AUTH_HASH){
+    try{ sessionStorage.setItem(SESSION_KEY,h); }catch(e){}
+    openDashboard();
+  }else{
+    err.textContent='That user ID and password do not match.';
+    document.getElementById('pwd').value='';
+    document.getElementById('pwd').focus();
+  }
+  return false;
+}
+function logout(){
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+  location.reload();
+}
+/* resume an existing session in this tab */
+(function(){
+  let t=null;
+  try{ t=sessionStorage.getItem(SESSION_KEY); }catch(e){}
+  if(t===AUTH_HASH) openDashboard();
+  else { const u=document.getElementById('uid'); if(u) u.focus(); }
+})();
 </script>
 </body>
 </html>
