@@ -911,7 +911,7 @@ const STORE_KEY='bridge_records_v1';
 /* ── cloud database (Firebase Firestore, REST — no SDK needed) ──
    Fill in projectId + apiKey from your Firebase project to enable
    central storage. Leave empty and the game still works, local-only. */
-const CLOUD={projectId:'',apiKey:''};
+const CLOUD={projectId:'impulse-e6a58',apiKey:'AIzaSyDAc0qT3UBcOvzQbSNbyg79wpRiTTTfldU'};
 const cloudOn=()=>!!(CLOUD.projectId&&CLOUD.apiKey);
 function sendToCloud(rec){
   if(!cloudOn())return;
