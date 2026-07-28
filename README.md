@@ -25,21 +25,45 @@ Once GitHub Pages is enabled (see below):
 
 Two layers:
 
-1. **Local** — every completed reading is saved to `localStorage` in the visitor's own browser (works even offline).
-2. **Cloud (central database)** — when Firebase is configured, every reading is also sent to a Firestore database, so the admin dashboard shows readings from **all** visitors, from any device.
+1. **Local** — every completed reading is saved to `localStorage` in the visitor's own browser, so the game works offline and a reading is never lost to a flaky connection.
+2. **Cloud** — every reading is also written to a **Cloud Firestore** database (project `impulse-e6a58`), so the admin dashboard sees readings from every visitor, on any device.
 
-### Connect the database (one-time, ~5 minutes)
+`admin.html` merges both sources, de-duplicates by record id, and drops malformed records. The **Refresh** button re-pulls from the cloud; **Export / Import JSON** moves an archive between machines.
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Create project** (name it `impulse`, Analytics off).
-2. In the project: **Build → Firestore Database → Create database** → Start in **test mode** → region nearest you → Enable.
-3. **Project settings (gear) → General** → copy the **Project ID** and **Web API Key**.
-4. In both `index.html` and `admin.html`, find the line near the top of the script:
-   `const CLOUD={projectId:'',apiKey:''};`
-   and paste your two values in. Commit the change.
+### Security model
 
-Done — new readings flow into the cloud, and `admin.html` merges cloud + local records automatically (Refresh button re-pulls).
+| Who | Can do |
+|---|---|
+| Any visitor | Submit a reading (`create`) |
+| Signed-in admin only | Read the archive |
+| Nobody | Edit or delete a reading |
 
-> Note: test-mode rules allow public read/write and expire after 30 days. For a class project that's fine; for longer use, set Firestore rules to allow `create` and `read` on `readings/**`.
+Enforced by Firestore rules on the server — not by the page. Reading the archive requires a Firebase Authentication sign-in, so the data is not exposed even to someone who reads the page source or calls the database directly.
+
+The admin login lives at `admin.html`. The session lasts until the tab is closed.
+
+> The Firebase Web API key is visible in the page source. That is normal and expected for Firebase web apps — it identifies the project, it does not grant access. The security rules are what protect the data.
+
+### Re-pointing this at your own Firebase project
+
+1. [console.firebase.google.com](https://console.firebase.google.com) → create a project → **Firestore Database → Create database**.
+2. **Authentication → Sign-in method → Email/Password → Enable**, then **Users → Add user** for your admin account.
+3. **Project settings → General → Your apps → Web** to get the Project ID and Web API key.
+4. In `index.html` and `admin.html`, set `CLOUD={projectId:'…',apiKey:'…'}`; in `admin.html` also set `ADMIN_UID` to the UID shown in the Users tab.
+5. Publish these rules under **Firestore → Rules**:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /readings/{docId} {
+      allow create: if true;
+      allow read: if request.auth != null && request.auth.uid == 'YOUR_ADMIN_UID';
+      allow update, delete: if false;
+    }
+  }
+}
+```
 
 ## Publish on GitHub Pages
 

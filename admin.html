@@ -155,9 +155,9 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
     <input id="uid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" required>
     <label for="pwd">Password</label>
     <input id="pwd" type="password" autocomplete="current-password" required>
-    <button class="btn" type="submit">Enter</button>
+    <button class="btn" type="submit" id="gbtn">Enter</button>
     <div class="err" id="gerr"></div>
-    <div class="note">Session ends when you close this tab.</div>
+    <div class="note">Verified by Firebase Authentication. Session ends when you close this tab.</div>
   </form>
 </div>
 
@@ -197,25 +197,32 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
    ═════════════════════════════════════════════════════════════ */
 const STORE_KEY='bridge_records_v1';
 
-/* ── cloud database (Firebase Firestore, REST) — same config as index.html ── */
+/* ── cloud database (Firestore REST) — same project as index.html ──
+   Reads require a Firebase Auth ID token; the security rules only
+   accept the admin UID, so the archive cannot be read by anyone else. */
 const CLOUD={projectId:'impulse-e6a58',apiKey:'AIzaSyDAc0qT3UBcOvzQbSNbyg79wpRiTTTfldU'};
 const cloudOn=()=>!!(CLOUD.projectId&&CLOUD.apiKey);
-let cloudRecs=[], cloudStatus=null;
+let cloudRecs=[], cloudStatus=null, idToken=null;
+
 async function fetchCloud(){
   if(!cloudOn()){cloudStatus='not configured';return;}
+  if(!idToken){cloudStatus='not signed in';return;}
   cloudStatus='connecting\u2026';
   try{
     let out=[],token='';
     do{
       const u='https://firestore.googleapis.com/v1/projects/'+CLOUD.projectId+
-        '/databases/(default)/documents/readings?pageSize=300&key='+CLOUD.apiKey+(token?'&pageToken='+token:'');
-      const r=await fetch(u); const j=await r.json();
+        '/databases/(default)/documents/readings?pageSize=300'+(token?'&pageToken='+token:'');
+      const r=await fetch(u,{headers:{'Authorization':'Bearer '+idToken}});
+      const j=await r.json();
       if(j.error) throw j.error;
       (j.documents||[]).forEach(d=>{try{out.push(JSON.parse(d.fields.json.stringValue))}catch(e){}});
       token=j.nextPageToken||'';
     }while(token);
     cloudRecs=out; cloudStatus='connected \u00b7 '+out.length+' cloud record'+(out.length===1?'':'s');
-  }catch(e){cloudStatus='error \u2014 check config / rules';}
+  }catch(e){
+    cloudStatus=(e&&e.status==='PERMISSION_DENIED')?'access denied by database rules':'error \u2014 could not reach the database';
+  }
 }
 const validRec=r=>r&&r.id&&r.T&&r.pct&&Array.isArray(r.rank)&&r.rank.length===3;
 function allRecords(){
@@ -561,52 +568,66 @@ function render(){
       <div class="card"><h3>Readiness distribution</h3><div class="hint">the gate sits at 45 — below it, path advice is overridden</div>${readinessHist(recs)}</div>
     </div>` + tableCard(recs);
 }
-/* ── login gate ───────────────────────────────────────────────
-   Credentials are checked against a SHA-256 hash, so the password
-   is not sitting in the page source in plain text. Note this is a
-   client-side gate on a static site: it keeps casual visitors out,
-   but it is not server-grade security. */
-const AUTH_HASH='cc3a8f2569b0ff06167a22533ed7d3cacc0d15af20902eff08e12ec33279dba6';
-const SESSION_KEY='bridge_admin_session';
+/* ── login ────────────────────────────────────────────────────
+   The password is verified by Google's Identity Toolkit, not by this
+   page. Nothing here can be bypassed by editing the JavaScript: the
+   Firestore rules only release data to a request carrying a valid ID
+   token for the admin account. The friendly "Impulse" user id is
+   mapped to the account's email address. */
+const ADMIN_EMAIL='ghosuddin.d@gmail.com';
+const ADMIN_USER='impulse';                 // typed user id, compared lowercase
+const TOKEN_KEY='bridge_admin_token';
 
-async function sha256(str){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-}
 function openDashboard(){
   document.getElementById('gate').style.display='none';
   document.querySelector('.wrap').classList.add('on');
   render();
   fetchCloud().then(render);
 }
+async function signIn(email,password){
+  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+CLOUD.apiKey,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email,password,returnSecureToken:true})
+  });
+  const j=await r.json();
+  if(j.error) throw j.error;
+  return j.idToken;
+}
 async function tryLogin(ev){
   ev.preventDefault();
-  const u=document.getElementById('uid').value.trim();
+  const u=document.getElementById('uid').value.trim().toLowerCase();
   const p=document.getElementById('pwd').value;
   const err=document.getElementById('gerr');
-  err.textContent='';
-  let h;
-  try{ h=await sha256(u+':'+p); }
-  catch(e){ err.textContent='This browser blocked the security check. Open the page over https:// or localhost.'; return false; }
-  if(h===AUTH_HASH){
-    try{ sessionStorage.setItem(SESSION_KEY,h); }catch(e){}
+  const btn=document.getElementById('gbtn');
+  err.textContent=''; btn.disabled=true; btn.textContent='Checking\u2026';
+  try{
+    if(u!==ADMIN_USER) throw {message:'INVALID_LOGIN_CREDENTIALS'};
+    idToken=await signIn(ADMIN_EMAIL,p);
+    try{ sessionStorage.setItem(TOKEN_KEY,idToken); }catch(e){}
     openDashboard();
-  }else{
-    err.textContent='That user ID and password do not match.';
+  }catch(e){
+    const m=(e&&e.message)||'';
+    err.textContent = /INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(m)
+      ? 'That user ID and password do not match.'
+      : /TOO_MANY_ATTEMPTS/.test(m)
+      ? 'Too many attempts. Wait a few minutes and try again.'
+      : 'Could not reach the sign-in service. Check your connection.';
     document.getElementById('pwd').value='';
     document.getElementById('pwd').focus();
-  }
+  }finally{ btn.disabled=false; btn.textContent='Enter'; }
   return false;
 }
 function logout(){
-  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+  idToken=null;
+  try{ sessionStorage.removeItem(TOKEN_KEY); }catch(e){}
   location.reload();
 }
-/* resume an existing session in this tab */
+/* resume a session in this tab — the token is re-validated by the
+   database on the first read, so a forged one gets nothing */
 (function(){
   let t=null;
-  try{ t=sessionStorage.getItem(SESSION_KEY); }catch(e){}
-  if(t===AUTH_HASH) openDashboard();
+  try{ t=sessionStorage.getItem(TOKEN_KEY); }catch(e){}
+  if(t){ idToken=t; openDashboard(); }
   else { const u=document.getElementById('uid'); if(u) u.focus(); }
 })();
 </script>
