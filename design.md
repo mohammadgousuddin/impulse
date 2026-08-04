@@ -232,7 +232,42 @@ Stated as design constraints, because they were easy to violate:
 
 ---
 
-## 7. Data storage & administration
+## 7. The Council — six agents, a router, and a synthesiser
+
+The arithmetic in §2 produces a number. The council produces an *argument*. Both run on every reading, and — this is the point — **they are allowed to disagree in front of the reader**.
+
+### The agents
+
+| Agent | Reads | Leans toward |
+|---|---|---|
+| **Attachment** | Chapter II — anxious/avoidant wiring, conflict behaviour | Anxious → Bridge (needs two guarantees). Avoidant → Given (structure without intimacy on demand). Fearful → abstains, raises alarm. |
+| **Kinship** | Chapter I — family as net vs cage, cost of disapproval | High KIN + high AUT → Bridge. High KIN alone → Given. Low KIN → Chosen. |
+| **Mirror** | Chapter IV — the want/expectation gap | High PRS + high AUT → Bridge (love is not wrong, it is *expensive*). High PRS + low AUT → Given. |
+| **Regret** | Chapter V — which regret you can forgive | Inaction-regretting → Chosen. Action-regretting → Given. |
+| **Readiness** | all chapters | Never leans. **Holds the veto.** |
+
+Each returns four things: a **relevance** (how much this player's answers give it to weigh), a **lean**, a **confidence**, and — separately — a **concern**: the thing it is watching for even if the door goes its way.
+
+### The Router
+
+Not every agent matters to every player. The router computes relevance per agent and **seats** only those above 45; the rest are shown as *consulted, not seated*, with the reason stated in plain language. A player whose want and expectation barely diverge genuinely has little for the Mirror agent to weigh, and the report says so rather than manufacturing an insight.
+
+Readiness is always seated.
+
+### The Synthesiser
+
+Weighted vote across seated agents: `weight = relevance × confidence`. Then one of four outcomes, in priority order:
+
+1. **Veto** — readiness below the gate. The door stands; the year does not.
+2. **Dissent** — the council's weighted lean differs from the arithmetic. Both are printed. The reader gets the arithmetic as their door and the council as their warning.
+3. **Split** — agents agree on the door but two of them wanted different things. The tension is named, with what each was protecting.
+4. **No quorum** — no seated agent found its domain loud enough to argue. Reported honestly as an enviable result rather than dressed up as unanimity.
+
+The synthesiser never overrules the arithmetic. It is a second opinion that is permitted to be uncomfortable — which is the only kind worth printing.
+
+*Verified across seven simulated archetypes: all three leans reachable, routing genuinely varies by player, and veto / dissent / split / no-quorum each fire.*
+
+## 8. Data storage & administration
 
 Every completed reading is archived automatically to the browser's local storage under the key `bridge_records_v1`. One record per playthrough:
 
@@ -247,7 +282,7 @@ No server, no accounts, nothing leaves the device. `the-bridge-admin.html`, open
 
 Archives move between devices via Export / Import JSON in the dashboard header; import de-duplicates by record id. Seed-demo generates 14 plausible profiles through the real engine for exploring the dashboard before real data exists.
 
-## 8. Files
+## 9. Files
 
 | File | What |
 |---|---|

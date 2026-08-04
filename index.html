@@ -198,6 +198,35 @@ svg.radar .shape{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2.4
 
 .foot{margin-top:46px;text-align:center;color:var(--dim);font-size:.78rem;line-height:1.9}
 .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:32px}
+
+/* ── the council ───────────────────────────────── */
+.council{margin:10px 0 6px}
+.agent{background:rgba(10,6,17,.5);border:1px solid rgba(255,255,255,.07);
+  border-left:2px solid var(--gold);border-radius:3px;padding:20px 22px;margin-bottom:12px;
+  backdrop-filter:blur(4px);transition:.3s}
+.agent.benched{opacity:.5;border-left-color:rgba(255,255,255,.15)}
+.agent .ahead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.agent .aname{font-family:var(--serif);font-size:1.22rem}
+.agent .adom{font-size:.66rem;color:var(--dim);letter-spacing:.06em;margin-bottom:14px}
+.agent p{font-family:var(--serif);font-size:1.06rem;line-height:1.62;color:#e2d8d2;margin-bottom:10px}
+.agent .aconcern{font-size:.86rem;color:var(--mut);font-family:var(--sans);line-height:1.65;
+  padding-top:10px;border-top:1px solid rgba(255,255,255,.055)}
+.agent .aconcern b{color:var(--rose);font-weight:400;letter-spacing:.14em;font-size:.6rem;
+  text-transform:uppercase;display:block;margin-bottom:5px}
+.lean{font-size:.62rem;letter-spacing:.12em;padding:4px 11px;border-radius:20px;white-space:nowrap}
+.lean-love{background:rgba(224,87,122,.14);color:#f0899f;border:1px solid rgba(224,87,122,.3)}
+.lean-arranged{background:rgba(157,134,232,.13);color:#b6a5ef;border:1px solid rgba(157,134,232,.3)}
+.lean-bridge{background:rgba(217,168,96,.13);color:#e5bf7f;border:1px solid rgba(217,168,96,.3)}
+.lean-none{background:rgba(255,255,255,.05);color:var(--mut);border:1px solid rgba(255,255,255,.1)}
+.lean-veto{background:rgba(224,87,122,.2);color:#ff9db0;border:1px solid rgba(224,87,122,.45)}
+.wbar{height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin:12px 0 14px}
+.wbar i{display:block;height:100%;width:0;transition:width 1.3s cubic-bezier(.2,.7,.2,1)}
+.wmeta{display:flex;justify-content:space-between;font-size:.64rem;color:var(--dim);margin-top:-8px;margin-bottom:12px}
+.split{background:rgba(52,14,26,.4);border:1px solid rgba(224,87,122,.25);border-radius:3px;
+  padding:16px 18px;margin-bottom:10px}
+.split .vs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;
+  font-family:var(--serif);font-size:1.05rem}
+.split .vs span{color:var(--dim);font-size:.72rem;font-family:var(--sans);letter-spacing:.2em}
 @media print{body{background:#fff;color:#000}#rail,#prog,.acts,#chapmark,#bg,#tint,#vig{display:none}}
 @media (prefers-reduced-motion:reduce){
   .chnum,#vig{animation:none}
@@ -664,6 +693,168 @@ const INVOICE={
   bridge:"You are asking two systems to both approve of you — yourself and your family. When they disagree, and they will, no one can break the tie. You'll have to, and you'll have to do it alone."
 };
 
+/* ═══════════════════════════════════════════════════════════════
+   THE COUNCIL — six specialists, a router, and a synthesiser.
+   The arithmetic engine above produces a number. The council
+   produces an argument. They are allowed to disagree, and when
+   they do, the reader gets to watch.
+   ═══════════════════════════════════════════════════════════════ */
+const dev=(v,mid)=>Math.abs(v-mid);
+
+const AGENTS=[
+{ id:'attachment', name:'Attachment', domain:'Chapter II · the room with no lights', c:'#5f7fb8',
+  run(T){
+    const rel=clamp(28+Math.max(dev(T.ANX,40),dev(T.AVO,40))*1.5);
+    if(T.ANX>58&&T.AVO>58) return {rel:100,lean:null,conf:35,
+      finding:"You reach for closeness and brace against it in the same breath. From where you stand every door looks like a trap — not because the doors are bad, but because your wiring reads arrival itself as risk.",
+      concern:"This is the profile most likely to leave a good marriage for reasons it cannot name afterwards."};
+    if(T.ANX>58) return {rel,lean:'bridge',conf:66,
+      finding:"You read silence as information; it usually isn't. A door your family opened <em>and</em> you walked through hands you two guarantees instead of one — and you are someone who needs two.",
+      concern:"Watch the month it goes calm. You are built to read peace as withdrawal."};
+    if(T.AVO>58) return {rel,lean:'arranged',conf:62,
+      finding:"Structure genuinely suits you. It lets a marriage run without requiring you to perform closeness on a schedule you did not set.",
+      concern:"That is also the trap. Structure will let you stay married twenty years without ever being known inside it."};
+    return {rel:Math.min(rel,42),lean:null,conf:24,
+      finding:"Attachment is not what decides this for you. You move toward people under stress, which is the most protective thing in this entire reading.",
+      concern:"None worth naming. You will survive either door."};
+  }},
+
+{ id:'kinship', name:'Kinship', domain:'Chapter I · the house you grew up in', c:'#e0577a',
+  run(T){
+    const rel=clamp(34+dev(T.KIN,50)*1.5);
+    if(T.KIN>=65&&T.AUT>=58) return {rel,lean:'bridge',conf:78,
+      finding:"You need the blessing and you need the choice. Read that again — not one softened by the other. Both, at full strength, which is why one door alone has never sounded right to you.",
+      concern:"When the two disagree, nobody can break the tie for you."};
+    if(T.KIN>=65) return {rel,lean:'arranged',conf:72,
+      finding:"You marry into a net rather than a void. That net has weight, and weight is not the same thing as a cage — the pull you feel is a resource, not a failure of nerve.",
+      concern:"A partner your family merely tolerates will not survive year four."};
+    if(T.KIN<=38) return {rel,lean:'love',conf:70,
+      finding:"You are unusually free of the room's opinion. Freedom of this shape is often the residue of a net that failed you once, which is worth knowing before you call it strength.",
+      concern:"You may underestimate how much you will want that net back at thirty-five."};
+    return {rel:Math.min(rel,55),lean:'bridge',conf:38,
+      finding:"Family registers at a normal, negotiable volume. It will shape this decision without deciding it.",
+      concern:"Nothing structural. Keep it that way by asking early rather than assuming."};
+  }},
+
+{ id:'mirror', name:'Mirror', domain:'Chapter IV · want versus expectation', c:'#b8556e',
+  run(T,ctx){
+    const rel=clamp(12+T.PRS*1.2);
+    const widest=(ctx.mirrors||[]).slice().sort((a,b)=>b.d-a.d)[0];
+    const q=widest?`"${widest.t}"`:'the widest scenario';
+    if(T.PRS<18) return {rel,lean:null,conf:20,
+      finding:"Almost nothing to report, and that is the report. You want roughly what you were taught to want — genuinely low friction, and a strength rather than a lack of imagination.",
+      concern:"None. This is the quietest result this agent can return."};
+    if(T.PRS>=45&&T.AUT>58) return {rel,lean:'bridge',conf:74,
+      finding:"You carry a loud inherited script and a strong will, and they do not agree. Your widest gap was "+q+". A door the room already sanctions costs you far less to walk through.",
+      concern:"Love marriage is not wrong for you — it is <em>expensive</em> for you, and nobody prices it out loud beforehand."};
+    if(T.PRS>=45) return {rel,lean:'arranged',conf:58,
+      finding:"The gap between what you want and what is expected of you is wide, but your will is not pushing hard against it. Your widest gap was "+q+".",
+      concern:"Compliance and agreement look identical from outside. Only one of them lasts."};
+    return {rel,lean:'bridge',conf:40,
+      finding:"A script exists and it is not running you. Your widest gap was "+q+" — the one place the room still speaks louder than you do.",
+      concern:"Small gaps surface in small decisions, repeatedly, for years."};
+  }},
+
+{ id:'regret', name:'Regret', domain:'Chapter V · ten years from now', c:'#9d86e8',
+  run(T){
+    const rel=clamp(30+dev(T.REG,50)*1.7);
+    if(T.REG>62) return {rel,lean:'love',conf:76,
+      finding:"The unchosen door is what will haunt you — not the wrong one. You forgive your own mistakes far more readily than your own hesitation.",
+      concern:"You may choose <em>something</em> just to have chosen. That is a different mistake wearing the same coat."};
+    if(T.REG<38) return {rel,lean:'arranged',conf:72,
+      finding:"You regret action more than inaction. A decision you made alone and got wrong would sit in you for years; a decision you were guided into would not.",
+      concern:"This is real self-knowledge, not timidity. Do not let anyone talk you out of it in the name of romance."};
+    return {rel:Math.min(rel,48),lean:null,conf:26,
+      finding:"Balanced. You will forgive yourself either way, eventually — which means regret should not be the thing that decides this.",
+      concern:"None. Let the other agents carry this one."};
+  }},
+
+{ id:'readiness', name:'Readiness', domain:'all chapters · holds the veto', c:'#cbb27a',
+  run(T,ctx){
+    if(T.RDY<45) return {rel:100,lean:null,conf:95,veto:true,
+      finding:"Readiness reads "+Math.round(T.RDY)+", below the gate. Wanting a marriage and being ready for one are different questions, and almost every tool in this space confuses them.",
+      concern:"I am overriding the door. Everything the others found still holds — it describes the shape you will have when you arrive, not the shape you are in now."};
+    if(ctx.coh<50) return {rel:100,lean:null,conf:80,veto:false,flag:'coherence',
+      finding:"Ready enough, at "+Math.round(T.RDY)+". But your answers contradict each other in a patterned way, which is the signature of someone arguing with a person who is not in the room.",
+      concern:"You will carry that argument into a marriage and your partner will think it is about them."};
+    if(T.RDY>65) return {rel:70,lean:null,conf:85,veto:false,
+      finding:"Readiness reads "+Math.round(T.RDY)+". You can name what you need, not just what you like — rarer at this stage than anyone admits.",
+      concern:"None. The door below is safe to walk through this year."};
+    return {rel:85,lean:null,conf:55,veto:false,
+      finding:"Readiness reads "+Math.round(T.RDY)+" — roughly ready, with a few things still sealed.",
+      concern:"Not disqualifying. But open the sealed thing before you promise anyone the whole of you."};
+  }}
+];
+
+const SEAT_THRESHOLD=45;
+
+function convene(r){
+  const T=S.T, ctx={mirrors:S.mirrors, coh:S.coh, external:S.external};
+  const reports=AGENTS.map(a=>{
+    const out=a.run(T,ctx);
+    return {id:a.id,name:a.name,domain:a.domain,c:a.c,
+      rel:Math.round(out.rel),lean:out.lean,conf:out.conf,
+      finding:out.finding,concern:out.concern,veto:!!out.veto,flag:out.flag||null,
+      seated: a.id==='readiness' ? true : out.rel>=SEAT_THRESHOLD};
+  });
+
+  /* ── router ─────────────────────────────────────────────── */
+  const seated=reports.filter(x=>x.seated), benched=reports.filter(x=>!x.seated);
+  const routerNote = benched.length
+    ? "Seated "+seated.length+" of "+reports.length+". "+
+      benched.map(b=>b.name+" was consulted but not seated — "+
+        (b.id==='mirror' ? "your want and your expectation barely diverge, so there is little for it to weigh"
+        : b.id==='attachment' ? "your attachment is steady enough that it does not tilt the decision"
+        : b.id==='regret' ? "you regret action and inaction about equally, so it has no thumb to put on the scale"
+        : "its domain reads close to neutral for you")).join(" ")
+    : "All "+reports.length+" agents seated — every domain reads strongly enough to matter for you.";
+
+  /* ── weighted vote ──────────────────────────────────────── */
+  const tally={love:0,arranged:0,bridge:0};
+  seated.forEach(x=>{ if(x.lean) tally[x.lean]+= (x.rel/100)*(x.conf/100)*100; });
+  const voted=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]);
+  const totalW=tally.love+tally.arranged+tally.bridge;
+  const councilTop = totalW>0 ? voted[0] : null;
+  const councilShare = totalW>0 ? Math.round(tally[councilTop]/totalW*100) : 0;
+
+  /* ── disagreement ───────────────────────────────────────── */
+  const voters=seated.filter(x=>x.lean&&x.conf>=55);
+  const splits=[];
+  for(let i=0;i<voters.length;i++)
+    for(let j=i+1;j<voters.length;j++)
+      if(voters[i].lean!==voters[j].lean)
+        splits.push({a:voters[i],b:voters[j]});
+  splits.sort((x,y)=>(y.a.conf+y.b.conf)-(x.a.conf+x.b.conf));
+
+  /* ── does the council dissent from the arithmetic? ──────── */
+  const engineTop=r.rank[0];
+  const dissent = !!councilTop && councilTop!==engineTop;
+
+  /* ── synthesiser ────────────────────────────────────────── */
+  const readiness=reports.find(x=>x.id==='readiness');
+  let verdict, note;
+  if(readiness.veto){
+    verdict=engineTop;
+    note="The council reached a door and the Readiness agent held it shut. That is not a contradiction — the door is still yours, the year is not. Read everything above as a description of who you will be standing there, not who is standing there now.";
+  }else if(dissent){
+    verdict=engineTop;
+    note="The arithmetic and the council disagree, and I am not going to hide that. The numbers put you at <em>"+DOOR[engineTop].n+"</em>; the agents, weighting what they each know best, lean <em>"+DOOR[councilTop].n+"</em>. The gap is usually one loud thread pulling the sum around while the specialists see a different shape. Take the arithmetic as your door and the council as your warning.";
+  }else if(!councilTop){
+    verdict=engineTop;
+    note="The council abstained. Not one seated agent found its domain loud enough in you to argue for a door \u2014 no dominant attachment pattern, no strong family pull, no wide inherited script, no lopsided regret. That is a real result and a fairly enviable one: it means nothing in your wiring is fighting you. The arithmetic still points to <em>"+DOOR[engineTop].n+"</em>, but it does so by a narrow margin over an ordinary person, not by pulling you away from a fault line. Choose with less fear than most people get to.";
+  }else if(splits.length){
+    verdict=engineTop;
+    note="The council reached <em>"+DOOR[engineTop].n+"</em>, but not quietly. "+splits[0].a.name+" and "+splits[0].b.name+" want different things for you, and neither is wrong — they are simply protecting different parts of you. That tension does not resolve when you pick a door. It comes with you.";
+  }else{
+    verdict=engineTop;
+    note="Rare: every seated agent points the same way. The arithmetic and the council agree on <em>"+DOOR[engineTop].n+"</em>. When a reading is this consistent, the risk stops being <em>which door</em> and becomes <em>whether you'll actually walk through it</em>.";
+  }
+
+  return {reports,seated,benched,routerNote,tally,councilTop,councilShare,
+          dissent,engineTop,splits:splits.slice(0,2),verdict,note,
+          vetoed:readiness.veto};
+}
+
 /* ── 5. RENDER ───────────────────────────────────────────────── */
 function go(fn){ stage.innerHTML=''; fn(); window.scrollTo({top:0,behavior:'instant'}); }
 function reveal(){ // stagger every .rv child
@@ -921,7 +1112,7 @@ function sendToCloud(rec){
     body:JSON.stringify({fields:{json:{stringValue:JSON.stringify(rec)},ts:{stringValue:rec.ts}}})
   }).catch(function(){});
 }
-function saveRecord(r,f){
+function saveRecord(r,f,C){
   try{
     const rec={
       id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
@@ -931,7 +1122,16 @@ function saveRecord(r,f){
       pct:{love:+r.pct.love.toFixed(2),arranged:+r.pct.arranged.toFixed(2),bridge:+r.pct.bridge.toFixed(2)},
       rank:r.rank, gap:+r.gap.toFixed(2), conf:r.conf, fail:f.n,
       mirrors:S.mirrors.map(m=>({t:m.t,a:m.a,b:m.b,d:m.d})),
-      answers:S.answers
+      answers:S.answers,
+      council: C?{
+        routerNote:C.routerNote,
+        councilTop:C.councilTop, councilShare:C.councilShare,
+        dissent:C.dissent, vetoed:C.vetoed, note:C.note,
+        agents:C.reports.map(a=>({id:a.id,name:a.name,seated:a.seated,rel:a.rel,
+                                  lean:a.lean,conf:a.conf,veto:a.veto,
+                                  finding:a.finding,concern:a.concern})),
+        splits:C.splits.map(sp=>({a:sp.a.name,aLean:sp.a.lean,b:sp.b.name,bLean:sp.b.lean}))
+      }:null
     };
     const all=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
     all.push(rec);
@@ -941,13 +1141,62 @@ function saveRecord(r,f){
   }catch(e){ return false; }
 }
 
+
+function councilPanel(C){
+  const chip=a=>a.veto?'<span class="lean lean-veto">VETO</span>'
+    :a.lean?`<span class="lean lean-${a.lean}">leans ${DOOR[a.lean].n}</span>`
+    :'<span class="lean lean-none">abstains</span>';
+  const card=a=>`
+    <div class="agent ${a.seated?'':'benched'}" style="border-left-color:${a.seated?a.c:'rgba(255,255,255,.15)'}">
+      <div class="ahead"><span class="aname" style="color:${a.c}">${a.name} agent</span>${chip(a)}</div>
+      <div class="adom">${a.domain}${a.seated?'':' · consulted, not seated'}</div>
+      <div class="wbar"><i data-w="${a.rel}" style="background:${a.c}"></i></div>
+      <div class="wmeta"><span>relevance to you ${a.rel}</span><span>confidence ${a.conf}</span></div>
+      <p>${a.finding}</p>
+      <div class="aconcern"><b>What it is watching for</b>${a.concern}</div>
+    </div>`;
+  return `
+  <div class="card">
+    <div class="tag">The council · how the reading was decided</div>
+    <p class="muted" style="font-family:var(--sans);font-size:.9rem;line-height:1.7;margin-bottom:20px">
+      Six specialists read you separately. Each one only knows its own domain, so each is allowed to
+      reach a different conclusion — and the router decides which of them your particular answers
+      actually give something to weigh.</p>
+    <div class="aconcern" style="border-top:none;padding-top:0;margin-bottom:22px">
+      <b>Router</b>${C.routerNote}</div>
+    <div class="council">${C.reports.map(card).join('')}</div>
+  </div>
+
+  ${C.splits.length?`<div class="card warn">
+    <div class="tag">Where they disagreed</div>
+    ${C.splits.map(sp=>`<div class="split">
+      <div class="vs">${sp.a.name}
+        <span>WANTS</span> <em>${sp.a.lean?DOOR[sp.a.lean].n:'—'}</em>
+        <span>·</span> ${sp.b.name}
+        <span>WANTS</span> <em>${sp.b.lean?DOOR[sp.b.lean].n:'—'}</em></div>
+      <p class="muted" style="font-size:.88rem;line-height:1.7">Neither is wrong. They are protecting
+      different parts of you — ${sp.a.name.toLowerCase()} guards ${sp.a.id==='kinship'?'your place in the room':sp.a.id==='attachment'?'how safe you feel up close':sp.a.id==='mirror'?'the cost of the script you carry':sp.a.id==='regret'?'the sentence you will say at fifty':'your footing'}, ${sp.b.name.toLowerCase()} guards ${sp.b.id==='kinship'?'your place in the room':sp.b.id==='attachment'?'how safe you feel up close':sp.b.id==='mirror'?'the cost of the script you carry':sp.b.id==='regret'?'the sentence you will say at fifty':'your footing'}.</p>
+    </div>`).join('')}
+  </div>`:''}
+
+  <div class="card ${C.dissent||C.vetoed?'warn':'good'}">
+    <div class="tag">The synthesiser</div>
+    ${C.councilTop?`<p class="muted" style="font-family:var(--sans);font-size:.86rem;margin-bottom:14px">
+      Weighted vote of the seated agents: <em>${DOOR[C.councilTop].n} ${C.councilShare}%</em>
+      &nbsp;·&nbsp; arithmetic engine: <em>${DOOR[C.engineTop].n}</em>
+      &nbsp;·&nbsp; ${C.dissent?'<span style="color:var(--rose)">they disagree</span>':'they agree'}</p>`:''}
+    <p>${C.note}</p>
+  </div>`;
+}
+
 function finish(){
   el('chapmark').textContent='';
   el('prog').firstElementChild.style.width='100%';
   setMood('verdict'); braid=1; heart=1;
   const r=score(), top=r.rank[0], second=r.rank[1], f=failure(top), ask=theAsk(top);
   const T=S.T;
-  const archived=saveRecord(r,f);
+  const C=convene(r);
+  const archived=saveRecord(r,f,C);
 
   const drivers=THREADS.filter(t=>['AUT','KIN','AMB','REG','PRS'].includes(t.k))
     .map(t=>({...t,v:T[t.k],dev:Math.abs(T[t.k]-50)}))
@@ -1003,6 +1252,8 @@ function finish(){
       <p>Your runner-up is <em>${DOOR[second].n}</em>. That matters: under stress, people do not stay at their strongest door. They drift to their second.</p>
     </div>
 
+    ${councilPanel(C)}
+
     <div class="card warn">
       <div class="tag">Your failure mode</div>
       <h3 style="margin-bottom:14px;color:var(--rose)">${f.n}</h3>
@@ -1054,7 +1305,7 @@ function finish(){
   </div>`;
 
   setTimeout(()=>{
-    document.querySelectorAll('.dbar i, .tbar i').forEach(n=>{
+    document.querySelectorAll('.dbar i, .tbar i, .wbar i').forEach(n=>{
       n.style.width=Math.min(100,+n.dataset.w)+'%';
     });
   },260);

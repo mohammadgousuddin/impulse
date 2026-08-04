@@ -116,6 +116,26 @@ tr.datarow:hover{background:rgba(217,168,96,.05)}
 .footer{margin-top:40px;text-align:center;color:var(--dim);font-size:.7rem;line-height:1.9}
 .donutwrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 
+
+/* ── council panel ─────────────────────────────── */
+.ag{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.045)}
+.ag:last-child{border:none}
+.ag .agh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ag .agn{font-size:.82rem;color:var(--ink)}
+.ag.off .agn{color:var(--dim)}
+.ag .agf{font-size:.72rem;color:var(--mut);line-height:1.6;margin-top:6px}
+.ag .agbar{height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:7px}
+.ag .agbar i{display:block;height:100%;border-radius:2px}
+.lean{display:inline-block;font-size:.6rem;letter-spacing:.08em;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.lean-love{background:rgba(224,87,122,.14);color:#f0899f;border:1px solid rgba(224,87,122,.3)}
+.lean-arranged{background:rgba(157,134,232,.13);color:#b6a5ef;border:1px solid rgba(157,134,232,.3)}
+.lean-bridge{background:rgba(217,168,96,.13);color:#e5bf7f;border:1px solid rgba(217,168,96,.3)}
+.lean-none{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid rgba(255,255,255,.1)}
+.lean-veto{background:rgba(224,87,122,.2);color:#ff9db0;border:1px solid rgba(224,87,122,.45)}
+.cnote{font-size:.74rem;color:var(--mut);line-height:1.7;margin-top:12px;padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.055)}
+.dissent{color:var(--rose)}
+
 /* ── login gate ────────────────────────────────── */
 #gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
   padding:24px;background:
@@ -363,6 +383,9 @@ const fmtD=ts=>new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'s
 const avg=(arr,f)=>arr.length? arr.reduce((s,x)=>s+f(x),0)/arr.length : 0;
 
 function kpis(recs){
+  const withCouncil=recs.filter(r=>r.council);
+  const withC=withCouncil.length;
+  const dissents=withCouncil.filter(r=>r.council.dissent||r.council.vetoed).length;
   const doors={love:0,arranged:0,bridge:0};
   recs.forEach(r=>doors[r.rank[0]]++);
   const splitN=recs.filter(r=>r.conf==='Split').length;
@@ -378,6 +401,8 @@ function kpis(recs){
       <div class="s">${unready} below the gate (45)</div></div>
     <div class="kpi rose"><div class="l">Avg inherited pressure</div><div class="v">${Math.round(avg(recs,r=>r.T.PRS))}</div>
       <div class="s">mirror gap, scaled</div></div>
+    <div class="kpi ind"><div class="l">Council dissent</div><div class="v">${withC?Math.round(dissents/withC*100)+'%':'\u2014'}</div>
+      <div class="s">${withC?dissents+' of '+withC+' readings':'no council data yet'}</div></div>
   </div>`;
 }
 
@@ -455,6 +480,40 @@ function explainTable(rec){
   Recorded shares from the live session: ${rec.pct.love}% / ${rec.pct.arranged}% / ${rec.pct.bridge}%.</p>`;
 }
 
+
+const AGC={attachment:'#5f7fb8',kinship:'#e0577a',mirror:'#b8556e',regret:'#9d86e8',readiness:'#cbb27a'};
+function councilBlock(rec){
+  const C=rec.council;
+  if(!C) return `<div class="dsec"><div class="tg">Council</div>
+    <div style="font-size:.74rem;color:var(--dim);line-height:1.7">
+    This reading was recorded before the council was added, so no agent breakdown exists for it.
+    Readings taken from now on include one.</div></div>`;
+  const chip=a=>a.veto?'<span class="lean lean-veto">VETO</span>'
+    :a.lean?`<span class="lean lean-${a.lean}">${DOORN[a.lean]}</span>`
+    :'<span class="lean lean-none">abstained</span>';
+  return `<div class="dsec">
+    <div class="tg">Council \u2014 how the verdict was argued</div>
+    ${(C.agents||[]).map(a=>`
+      <div class="ag ${a.seated?'':'off'}">
+        <div class="agh">
+          <span class="agn">${a.name}${a.seated?'':' <span style="color:var(--dim);font-size:.66rem">\u00b7 not seated</span>'}</span>
+          ${chip(a)}
+        </div>
+        <div class="agbar"><i style="width:${a.rel}%;background:${a.seated?(AGC[a.id]||'#d9a860'):'rgba(255,255,255,.15)'}"></i></div>
+        <div class="agf">relevance ${a.rel} \u00b7 confidence ${a.conf}</div>
+      </div>`).join('')}
+    ${(C.splits&&C.splits.length)?`<div class="cnote"><b style="color:var(--rose)">Disagreements:</b> ${
+      C.splits.map(sp=>`${sp.a} wanted ${sp.aLean?DOORN[sp.aLean]:'\u2014'} vs ${sp.b} wanted ${sp.bLean?DOORN[sp.bLean]:'\u2014'}`).join(' \u00b7 ')}</div>`:''}
+    <div class="cnote">
+      <b>Council vote:</b> ${C.councilTop?DOORN[C.councilTop]+' '+C.councilShare+'%':'abstained'}
+      &nbsp;\u00b7&nbsp; <b>Arithmetic:</b> ${DOORN[rec.rank[0]]}
+      &nbsp;\u00b7&nbsp; ${C.vetoed?'<span class="dissent">readiness veto applied</span>'
+        :C.dissent?'<span class="dissent">council dissented</span>':'agreed'}
+    </div>
+    <div class="cnote" style="color:var(--dim)"><b>Router:</b> ${C.routerNote||''}</div>
+  </div>`;
+}
+
 function drawer(rec){
   const win=rec.rank[0];
   const worst=(rec.mirrors||[]).slice().sort((a,b)=>b.d-a.d)[0];
@@ -473,6 +532,7 @@ function drawer(rec){
           ${rec.rank.map(d=>hbar(DOORN[d],rec.pct[d],100,DOORC[d],rec.pct[d].toFixed(1)+'%')).join('')}
           <div style="font-size:.74rem;color:var(--mut);margin-top:10px">Failure mode: <span style="color:var(--rose)">${rec.fail}</span> · gap to runner-up ${rec.gap} pts</div>
         </div>
+        <div style="margin-bottom:16px">${councilBlock(rec)}</div>
         <div class="dsec">
           <div class="tg">Mirror gaps (want vs expected)</div>
           ${(rec.mirrors||[]).map(m=>`<div class="mrow"><span>${m.t}</span><b>Δ ${m.d}</b></div>`).join('')}
