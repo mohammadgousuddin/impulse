@@ -10,7 +10,7 @@ Once GitHub Pages is enabled (see below):
 
 | Page | URL |
 |---|---|
-| The game | `https://<your-username>.github.io/impulse/` |
+| The Impulse | `https://<your-username>.github.io/impulse/` |
 | Admin dashboard | `https://<your-username>.github.io/impulse/admin.html` |
 
 ## Files
