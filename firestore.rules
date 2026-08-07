@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Impulse - The Bridge : Cloud Firestore security rules
+// Any visitor may submit a reading. Only the signed-in admin may read
+// the archive. Nobody may edit or delete a reading.
+// Deployed to project: impulse-e6a58
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /readings/{docId} {
+      allow create: if true;
+      allow read: if request.auth != null && request.auth.uid == 'WyFgaQf3XKe7nmTTs4K2IIuLTm12';
+      allow update, delete: if false;
+      }
+    }
+  }
