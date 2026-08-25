@@ -10,7 +10,7 @@
 <style>
 :root{
   --bg:#0a0611; --panel:#140c1d; --panel2:#1b1127;
-  --ink:#f4ece6; --mut:#9c8794; --dim:#6d5b68;
+  --ink:#f4ece6; --mut:#9c8794; --dim:#8a7884;
   --gold:#d9a860; --rose:#e0577a; --ind:#9d86e8; --teal:#4f9c96; --wine:#7a2338;
   --line:rgba(255,255,255,.07);
   --serif:'Cormorant Garamond',Georgia,serif;
@@ -541,7 +541,7 @@ function drawer(rec){
       </div>
       <div>
         <div class="dsec" style="margin-bottom:16px">
-          <div class="tg">How the AI scored it — full arithmetic</div>
+          <div class="tg">How the engine scored it — full arithmetic</div>
           ${explainTable(rec)}
         </div>
         <div class="dsec">
@@ -634,7 +634,7 @@ function render(){
    Firestore rules only release data to a request carrying a valid ID
    token for the admin account. The friendly "Impulse" user id is
    mapped to the account's email address. */
-const ADMIN_EMAIL='ghosuddin.d@gmail.com';
+const ADMIN_EMAIL='ghousuddin.d@gmail.com';
 const ADMIN_USER='impulse';                 // typed user id, compared lowercase
 const TOKEN_KEY='bridge_admin_token';
 
