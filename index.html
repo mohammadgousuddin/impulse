@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#08040e; --ink:#f4ece6; --mut:#9c8794; --dim:#6d5b68;
+  --bg:#08040e; --ink:#f4ece6; --mut:#9c8794; --dim:#8a7884;
   --gold:#d9a860; --rose:#e0577a; --wine:#7a2338; --ind:#6a56a8; --teal:#4f9c96;
   --line:rgba(217,168,96,.18);
   --panel:rgba(255,255,255,.035);
@@ -231,6 +231,7 @@ svg.radar .shape{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2.4
 @media (prefers-reduced-motion:reduce){
   .chnum,#vig{animation:none}
 }
+.chip:focus-visible,.opt:focus-visible,.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -316,7 +317,7 @@ function drawThread(col, base, phase, t, alpha){
 }
 
 function frame(now){
-  const t=now-t0;
+  const t=reduceMotion?0:now-t0; // frozen wave shape under reduced motion — no continuous crawl
   // ease colors + braid
   ['a','b','glow'].forEach(k=>{ mood[k]=lerpC(mood[k],target[k],.02); });
   mood.n = lerp(mood.n||60, target.n, .02);
@@ -340,10 +341,13 @@ function frame(now){
   const count=Math.round(mood.n);
   for(let i=0;i<count;i++){
     const p=P[i];
-    p.ph+=0.006*p.sw; p.tw+=0.03;
-    p.y-=p.s*(reduceMotion?.4:1);
-    p.x+=Math.sin(p.ph)*.35;
-    if(p.y<-10){Object.assign(p,spawn(i));p.y=H+8;}
+    p.tw+=0.03;
+    if(!reduceMotion){ // spatial drift is skipped under reduced motion; the twinkle (opacity only) stays
+      p.ph+=0.006*p.sw;
+      p.y-=p.s;
+      p.x+=Math.sin(p.ph)*.35;
+      if(p.y<-10){Object.assign(p,spawn(i));p.y=H+8;}
+    }
     const c=p.which? mood.a: mood.b;
     const twinkle=.35+.3*Math.sin(p.tw);
     const g=bx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
@@ -890,38 +894,43 @@ function scrThreshold(){
     <h2>Before anything else.</h2>
     <div class="rule"></div>
     <div class="field">
-      <label>What should this reading call you</label>
+      <label for="nm">What should this reading call you</label>
       <input type="text" id="nm" placeholder="a name, or anything" autocomplete="off">
     </div>
     <div class="field">
-      <label>You are</label>
-      <div class="chips" id="gd">
-        ${['A man','A woman','Neither / other'].map(g=>`<div class="chip" data-v="${g}">${g}</div>`).join('')}
+      <label id="lbl-gd">You are</label>
+      <div class="chips" id="gd" role="group" aria-labelledby="lbl-gd">
+        ${['A man','A woman','Neither / other'].map(g=>`<div class="chip" data-v="${g}" role="button" tabindex="0" aria-pressed="false">${g}</div>`).join('')}
       </div>
       <p class="tnote" style="margin-top:10px">Nothing in this engine is scored by gender. This only decides whose expectation you are reading against in Chapter IV.</p>
     </div>
     <div class="field">
-      <label>Roughly</label>
-      <div class="chips" id="ag">
-        ${['Under 22','22–26','27–31','32–37','38+'].map(g=>`<div class="chip" data-v="${g}">${g}</div>`).join('')}
+      <label id="lbl-ag">Roughly</label>
+      <div class="chips" id="ag" role="group" aria-labelledby="lbl-ag">
+        ${['Under 22','22–26','27–31','32–37','38+'].map(g=>`<div class="chip" data-v="${g}" role="button" tabindex="0" aria-pressed="false">${g}</div>`).join('')}
       </div>
     </div>
     <div class="field">
-      <label>How loudly does your family's opinion live in your head</label>
-      <input type="range" id="fv" min="0" max="100" value="50">
+      <label for="fv">How loudly does your family's opinion live in your head</label>
+      <input type="range" id="fv" min="0" max="100" value="50" aria-label="How loudly does your family's opinion live in your head, from a distant radio to a voice in the room">
       <div class="ends"><span>a distant radio</span><span>a voice in the room</span></div>
     </div>
+    <p class="tnote">A note before you begin: this reading — including whatever you type above — is saved to this browser, and, if cloud sync is enabled, to a shared archive only the admin can read. Nobody, including you, can edit or delete it afterwards. If you'd rather not be remembered, answer as anything but yourself.</p>
     <div style="height:26px"></div>
     <button class="btn" id="goB" disabled onclick="startPlay()">Begin</button>
   </div>`;
   const check=()=>{ el('goB').disabled = !(S.name && S.gender && S.age); };
   el('nm').oninput = e=>{ S.name=e.target.value.trim(); check(); };
   ['gd','ag'].forEach(id=>{
-    el(id).querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
-      el(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));
-      c.classList.add('sel');
-      if(id==='gd') S.gender=c.dataset.v; else S.age=c.dataset.v;
-      check();
+    el(id).querySelectorAll('.chip').forEach(c=>{
+      const select=()=>{
+        el(id).querySelectorAll('.chip').forEach(x=>{ x.classList.remove('sel'); x.setAttribute('aria-pressed','false'); });
+        c.classList.add('sel'); c.setAttribute('aria-pressed','true');
+        if(id==='gd') S.gender=c.dataset.v; else S.age=c.dataset.v;
+        check();
+      };
+      c.onclick=select;
+      c.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(); } };
     });
   });
   el('fv').oninput = e=>{ S.familyVolume=+e.target.value; };
@@ -1005,12 +1014,12 @@ function mirrorScreen(){
     <div class="mirror rv">
       <div class="mrow a">
         <div class="mlab"><span class="who">What I actually want</span><span class="val" id="va"></span></div>
-        <input type="range" id="sa" min="0" max="100" value="50">
+        <input type="range" id="sa" min="0" max="100" value="50" aria-label="What I actually want, from ${m.L} to ${m.R}">
         <div class="ends"><span>${m.L}</span><span>${m.R}</span></div>
       </div>
       <div class="mrow b">
         <div class="mlab"><span class="who">What's expected of ${expectedOf()}</span><span class="val" id="vb"></span></div>
-        <input type="range" id="sb" min="0" max="100" value="50">
+        <input type="range" id="sb" min="0" max="100" value="50" aria-label="What's expected of ${expectedOf()}, from ${m.L} to ${m.R}">
         <div class="ends"><span>${m.L}</span><span>${m.R}</span></div>
       </div>
       <div class="gapviz">
@@ -1082,7 +1091,8 @@ function radar(){
   g+=`<polygon class="shape" points="${poly}" fill="rgba(217,168,96,.16)" stroke="var(--gold)" stroke-width="1.3"/>`;
   THREADS.forEach((t,i)=>{const[x,y]=pt(i,R*S.T[t.k]/100);
     g+=`<circle cx="${x}" cy="${y}" r="3" fill="${t.c}"/>`;});
-  return `<svg class="radar" viewBox="0 0 420 380">${g}</svg>`;
+  const summary=THREADS.map(t=>t.name+' '+Math.round(S.T[t.k])).join(', ');
+  return `<svg class="radar" viewBox="0 0 420 380" role="img" aria-label="Radar chart of your eight threads: ${summary}">${g}</svg>`;
 }
 
 const NOTE={
@@ -1298,6 +1308,7 @@ function finish(){
     </div>
 
     <div class="acts">
+      <button class="btn" onclick="shareCard()" id="shareBtn">Share your result</button>
       <button class="btn" onclick="window.print()">Save this reading</button>
       <button class="btn ghost" onclick="location.reload()">Begin again</button>
     </div>
@@ -1309,6 +1320,134 @@ function finish(){
       n.style.width=Math.min(100,+n.dataset.w)+'%';
     });
   },260);
+}
+
+/* ── 7. SHARE CARD ───────────────────────────────────────────── */
+const DOOR_SOLID={love:'#e0577a',arranged:'#9d86e8',bridge:'#d9a860'};
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function drawSpaced(ctx,text,cx,y,font,color,spacing){
+  ctx.font=font; ctx.fillStyle=color; ctx.textAlign='left';
+  const chars=[...text];
+  const widths=chars.map(ch=>ctx.measureText(ch).width);
+  const total=widths.reduce((a,b)=>a+b,0)+spacing*(chars.length-1);
+  let x=cx-total/2;
+  chars.forEach((ch,i)=>{ ctx.fillText(ch,x,y); x+=widths[i]+spacing; });
+}
+
+async function buildShareCanvas(){
+  const r=score(), top=r.rank[0], T=S.T;
+  const W=1080,H=1350;
+  const cv=document.createElement('canvas');
+  cv.width=W; cv.height=H;
+  const c=cv.getContext('2d');
+
+  const bgGrad=c.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,'#0d0716'); bgGrad.addColorStop(1,'#08040e');
+  c.fillStyle=bgGrad; c.fillRect(0,0,W,H);
+  const glow=(x,y,rad,col,a)=>{
+    const g=c.createRadialGradient(x,y,0,x,y,rad);
+    g.addColorStop(0,`rgba(${col},${a})`); g.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=g; c.fillRect(0,0,W,H);
+  };
+  glow(W*0.12,H*0.04,700,'122,35,56',.35);
+  glow(W*0.92,H*0.97,650,'106,86,168',.3);
+
+  try{ await document.fonts.ready; }catch(e){}
+
+  const gold='#d9a860', ink='#f4ece6', mut='#9c8794', dim='#6d5b68';
+
+  drawSpaced(c,'IMPULSE · THE BRIDGE',W/2,120,'500 22px Inter, sans-serif',gold,6);
+
+  c.textAlign='center';
+  c.fillStyle=mut; c.font='italic 300 32px "Cormorant Garamond", serif';
+  c.fillText('Your door is',W/2,220);
+
+  c.fillStyle=gold; c.font='300 118px "Cormorant Garamond", serif';
+  c.fillText(DOOR[top].n,W/2,340);
+
+  c.fillStyle=mut; c.font='300 30px Inter, sans-serif';
+  c.fillText(DOOR[top].s+'  ·  confidence: '+r.conf,W/2,392);
+
+  let y=490;
+  r.rank.forEach(k=>{
+    c.textAlign='left';
+    c.fillStyle= k===top? gold: mut;
+    c.font='300 36px "Cormorant Garamond", serif';
+    c.fillText(DOOR[k].n,90,y);
+    c.textAlign='right';
+    c.fillStyle=gold; c.font='300 36px "Cormorant Garamond", serif';
+    c.fillText(Math.round(r.pct[k])+'%',W-90,y);
+
+    const barY=y+22, barW=W-180;
+    c.fillStyle='rgba(255,255,255,.08)';
+    roundRect(c,90,barY,barW,10,5); c.fill();
+    const frac=Math.min(1,(r.pct[k]*1.9)/100);
+    c.fillStyle=DOOR_SOLID[k];
+    roundRect(c,90,barY,barW*frac,10,5); c.fill();
+    y+=115;
+  });
+
+  const drivers=THREADS.filter(t=>['AUT','KIN','AMB','REG','PRS'].includes(t.k))
+    .map(t=>({...t,v:T[t.k],dev:Math.abs(T[t.k]-50)}))
+    .sort((a,b)=>b.dev-a.dev).slice(0,3);
+
+  y+=30;
+  c.textAlign='left';
+  c.fillStyle=gold; c.font='500 22px Inter, sans-serif';
+  c.fillText('WHY',90,y);
+  y+=54;
+  drivers.forEach(d=>{
+    c.fillStyle=ink; c.font='300 32px "Cormorant Garamond", serif';
+    c.fillText(d.name,90,y);
+    c.textAlign='right';
+    c.fillStyle=dim; c.font='300 32px "Cormorant Garamond", serif';
+    c.fillText(Math.round(d.v),W-90,y);
+    c.textAlign='left';
+    y+=58;
+  });
+
+  c.textAlign='center';
+  c.fillStyle=dim; c.font='300 22px Inter, sans-serif';
+  c.fillText('A structured mirror for the love / arranged marriage question.',W/2,H-88);
+  c.fillStyle=gold; c.font='300 24px Inter, sans-serif';
+  c.fillText(location.hostname||'Impulse · The Bridge',W/2,H-50);
+
+  return cv;
+}
+
+async function shareCard(){
+  const btn=el('shareBtn');
+  const prevText=btn.textContent;
+  btn.disabled=true; btn.textContent='Preparing…';
+  try{
+    const cv=await buildShareCanvas();
+    await new Promise(resolve=>{
+      cv.toBlob(async blob=>{
+        const file=new File([blob],'impulse-the-bridge-result.png',{type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          try{ await navigator.share({files:[file],title:'Impulse — The Bridge',text:'My door: '+DOOR[score().rank[0]].n}); return resolve(); }
+          catch(e){ /* share cancelled or unsupported — fall through to download */ }
+        }
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download='impulse-the-bridge-result.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),4000);
+        resolve();
+      },'image/png');
+    });
+  } finally {
+    btn.disabled=false; btn.textContent=prevText;
+  }
 }
 
 /* ── boot ────────────────────────────────────────────────────── */
