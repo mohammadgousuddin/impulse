@@ -1,0 +1,423 @@
+<meta charset="utf-8">
+<title>Impulse Project Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f2ec;
+  --surface:#ffffff;
+  --surface2:#f1e9df;
+  --ink:#211823;
+  --mut:#6e5c68;
+  --dim:#9c8c95;
+  --line:rgba(33,24,35,.14);
+  --gold:#9a6a2f;
+  --rose:#a3395a;
+  --violet:#54447f;
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0710;
+    --surface:#150e1c;
+    --surface2:#1b1224;
+    --ink:#f3ece6;
+    --mut:#a08d97;
+    --dim:#6d5b68;
+    --line:rgba(255,255,255,.09);
+    --gold:#d9a860;
+    --rose:#e0577a;
+    --violet:#9d86e8;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0710;
+  --surface:#150e1c;
+  --surface2:#1b1224;
+  --ink:#f3ece6;
+  --mut:#a08d97;
+  --dim:#6d5b68;
+  --line:rgba(255,255,255,.09);
+  --gold:#d9a860;
+  --rose:#e0577a;
+  --violet:#9d86e8;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── decorative thread rail (echoes the product's own motif) ── */
+#rail{position:fixed;left:0;top:0;bottom:0;width:34px;display:flex;align-items:center;
+  justify-content:center;gap:6px;z-index:0;opacity:.55;pointer-events:none}
+#rail i{display:block;width:1.5px;height:29vh;border-radius:2px}
+#rail i:nth-child(1){background:linear-gradient(180deg,transparent,var(--gold),transparent)}
+#rail i:nth-child(2){background:linear-gradient(180deg,transparent,var(--rose),transparent)}
+#rail i:nth-child(3){background:linear-gradient(180deg,transparent,var(--violet),transparent)}
+@media(max-width:900px){#rail{display:none}}
+
+.wrap{max-width:760px;margin:0 auto;padding:9vh 30px 14vh;position:relative;z-index:1}
+.wide{max-width:860px}
+
+h1,h2,h3{font-family:var(--serif);font-weight:400;text-wrap:balance;color:var(--ink)}
+p{text-wrap:pretty}
+
+/* ── title block ── */
+.kicker{font-family:var(--sans);font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--gold);font-weight:500;margin-bottom:20px}
+h1.title{font-size:clamp(2.6rem,7vw,4.1rem);line-height:1.02;letter-spacing:-.01em;margin:0 0 18px}
+h1.title em{font-style:italic;color:var(--gold)}
+.dek{font-family:var(--serif);font-style:italic;font-size:1.28rem;line-height:1.5;color:var(--mut);
+  font-weight:400;max-width:34ch;margin:0 0 34px}
+
+.metabar{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--sans);font-size:.78rem;
+  color:var(--mut);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:16px 0;margin-bottom:8px}
+.metabar b{color:var(--ink);font-weight:500}
+
+/* ── fact panel ── */
+.facts{background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:24px 26px;margin:44px 0;display:grid;grid-template-columns:1fr 1fr;gap:18px 28px}
+@media(max-width:600px){.facts{grid-template-columns:1fr}}
+.facts .f-l{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.facts .f-v{font-family:var(--serif);font-size:1.08rem;color:var(--ink)}
+.facts .f-v.mono{font-family:var(--mono);font-size:.86rem;word-break:break-word}
+
+/* ── sections ── */
+section{margin-top:88px}
+.snum{font-family:var(--mono);font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:10px}
+h2{font-size:clamp(1.7rem,4vw,2.15rem);margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+h3{font-size:1.32rem;font-weight:500;margin:34px 0 12px;color:var(--ink)}
+h3 .code{font-family:var(--mono);font-size:.82rem;color:var(--gold);font-weight:400;margin-right:10px;
+  border:1px solid var(--line);padding:2px 8px;border-radius:3px;vertical-align:1px}
+
+p{margin:0 0 17px;max-width:64ch;color:var(--ink)}
+.wide p{max-width:none}
+ul,ol{margin:0 0 20px;padding-left:22px;max-width:62ch}
+li{margin-bottom:9px}
+strong{font-weight:600}
+a{color:var(--gold)}
+
+.lede{font-family:var(--serif);font-size:1.22rem;line-height:1.6;color:var(--ink);max-width:60ch}
+
+blockquote{font-family:var(--serif);font-style:italic;font-size:1.4rem;line-height:1.5;
+  color:var(--ink);border-left:2px solid var(--gold);padding:4px 0 4px 26px;margin:32px 0;max-width:52ch}
+blockquote cite{display:block;font-family:var(--sans);font-style:normal;font-size:.72rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:12px}
+
+/* ── tables ── */
+.tblwrap{overflow-x:auto;margin:20px 0 28px;border:1px solid var(--line);border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:520px}
+th{text-align:left;font-family:var(--sans);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);font-weight:500;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--line);
+  white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+tr:last-child td{border-bottom:none}
+td.code,th.code{font-family:var(--mono)}
+td .k{font-family:var(--mono);font-size:.78rem;color:var(--gold);font-weight:500}
+
+/* ── formula block ── */
+.formula{background:var(--surface2);border:1px solid var(--line);border-radius:6px;
+  padding:22px 24px;margin:22px 0 30px;overflow-x:auto}
+.formula pre{margin:0;font-family:var(--mono);font-size:.84rem;line-height:1.85;color:var(--ink);
+  white-space:pre}
+.formula .c{color:var(--dim)}
+
+/* ── callouts ── */
+.callout{border:1px solid var(--line);border-radius:6px;padding:20px 24px;margin:22px 0 30px;
+  background:var(--surface)}
+.callout .tag{font-family:var(--sans);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;
+  font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.callout.fix{border-left:3px solid var(--rose)}
+.callout.fix .tag{color:var(--rose)}
+.callout.good{border-left:3px solid var(--violet)}
+.callout.good .tag{color:var(--violet)}
+.callout p:last-child{margin-bottom:0}
+.callout code{font-family:var(--mono);font-size:.84em;background:var(--surface2);padding:1px 6px;border-radius:3px}
+
+/* ── recommendation tiers ── */
+.tier{margin:26px 0 34px}
+.tier .th{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.tier .th .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.tier .th h4{font-family:var(--serif);font-size:1.2rem;font-weight:500;margin:0;color:var(--ink)}
+.tier .th .cnt{font-family:var(--mono);font-size:.72rem;color:var(--dim)}
+.reco{border:1px solid var(--line);border-radius:5px;padding:15px 18px;margin-bottom:10px;background:var(--surface)}
+.reco .rh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:5px}
+.reco b{display:block;font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink)}
+.reco p{margin:0;font-size:.92rem;color:var(--mut);max-width:none}
+.reco.done{opacity:.82}
+.tier .rollup{font-size:.86rem;color:var(--mut);margin:-6px 0 16px}
+
+/* ── status pills ── */
+.status{display:inline-block;font-family:var(--sans);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;
+  border:1px solid;flex:0 0 auto}
+.status.done{color:var(--violet);border-color:color-mix(in srgb, var(--violet) 45%, transparent);
+  background:color-mix(in srgb, var(--violet) 13%, transparent)}
+.status.open{color:var(--rose);border-color:color-mix(in srgb, var(--rose) 45%, transparent);
+  background:color-mix(in srgb, var(--rose) 13%, transparent)}
+.status.wait{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 45%, transparent);
+  background:color-mix(in srgb, var(--gold) 13%, transparent)}
+
+/* ── footer ── */
+.endnote{margin-top:110px;padding-top:26px;border-top:1px solid var(--line);
+  font-size:.82rem;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto!important} }
+</style>
+
+<div id="rail"><i></i><i></i><i></i></div>
+
+<div class="wrap">
+
+  <div class="kicker">Project Report</div>
+  <h1 class="title">Impulse<br><em>The Bridge</em></h1>
+  <p class="dek">An emotional-analysis engine for the love-marriage / arranged-marriage question — read as a working system, and as a piece of research in progress.</p>
+
+  <div class="metabar">
+    <span>Subject: <b>github.com/mohammadgousuddin/impulse</b></span>
+    <span>Reviewed: <b>25 August 2026</b></span>
+    <span>Updated: <b>25 August 2026</b></span>
+    <span>Prepared by: <b>Claude, on request</b></span>
+  </div>
+
+  <div class="facts">
+    <div><div class="f-l">License</div><div class="f-v">MIT · Mohammad Gousuddin, 2026</div></div>
+    <div><div class="f-l">Stack</div><div class="f-v">Vanilla HTML / CSS / JS — zero dependencies</div></div>
+    <div><div class="f-l">Surface</div><div class="f-v">index.html (game) · admin.html (dashboard) · test/ (new)</div></div>
+    <div><div class="f-l">Backend</div><div class="f-v mono">Firebase / Cloud Firestore (project impulse-e6a58)</div></div>
+    <div><div class="f-l">Runtime</div><div class="f-v">Fully static, works offline; cloud sync optional</div></div>
+    <div><div class="f-l">Since this report began</div><div class="f-v">7 fixes shipped across 2 of 3 recommendation tiers</div></div>
+  </div>
+
+  <p class="lede">Impulse — internally titled <em>The Bridge</em> — is a single-page web application that turns a question usually treated as a matter of taste into a structured, scored self-assessment: not <em>which is better, love marriage or arranged marriage</em>, but <em>which one your particular psychology is built to survive when it eventually fails you</em>. This report sets out what the project is trying to do, where it sits relative to adjacent fields, how its engine actually works, what a hands-on technical review turned up, and what's changed since. Most of what was code-fixable has since been fixed — §6 and §8 carry the ledger; what remains needs the owner's evidence or a content decision, not more code.</p>
+
+  <!-- 1 — OBJECTIVE -->
+  <section id="objective">
+    <div class="snum">01 / 09</div>
+    <h2>Objective</h2>
+
+    <p>Every existing "love vs. arranged" quiz on the internet asks a shallow version of the question: <em>which do you prefer?</em> Preference is cheap — it shifts with the last film someone watched or the last wedding they attended, and a quiz built on preference can always be flattered or gamed. Impulse's stated objective is to replace that question with a harder one, quoted directly from its own design document:</p>
+
+    <blockquote>Both doors lead to a room where something breaks. Which breakage can you live inside?
+      <cite>Impulse — design.md, §0</cite>
+    </blockquote>
+
+    <p>Concretely, the system commits to four objectives that most tools in this space skip:</p>
+    <ul>
+      <li><strong>Score fit, not preference.</strong> Twenty-six narrative choices move eight named psychological traits, which are then weighted into three comparative "doors" rather than a single yes/no.</li>
+      <li><strong>Name the cost of the answer.</strong> Every door — love, arranged, or the hybrid "Bridge" — ships with a stated failure mode and an "invoice," on the explicit principle that a reading which only lists benefits is flattery, not analysis.</li>
+      <li><strong>Separate fit from readiness.</strong> A person can have a textbook love-marriage temperament and be nowhere near ready to marry anyone. Impulse tracks readiness as an orthogonal ninth number that can override the entire verdict.</li>
+      <li><strong>Measure inherited pressure instead of assuming it.</strong> Rather than asking "do you believe men should propose," the system asks the same six scenarios twice — what the player wants, and what they believe is expected of their gender — and scores the <em>gap</em>, never the content.</li>
+    </ul>
+  </section>
+
+  <!-- 2 — VISION & POSITIONING -->
+  <section id="vision">
+    <div class="snum">02 / 09</div>
+    <h2>Vision &amp; where this project belongs</h2>
+
+    <p>Impulse doesn't sit cleanly inside one existing category. It borrows from four adjacent fields and welds them into something that reads, alternately, like a psychometric instrument, a piece of interactive fiction, and a small explainable-AI case study — despite containing no machine learning at all.</p>
+
+    <h3><span class="code">A</span>Personality &amp; psychometric assessment</h3>
+    <p>The eight-thread model (Self-Authorship, Kinship Pull, Anxious/Avoidant Wiring, Ambiguity Tolerance, Regret Orientation, Inherited Pressure, Readiness) sits in the same family as MBTI, Big Five, or attachment-style quizzes — but scored against a real, binding life decision rather than a personality label, and explicitly disclaiming predictive power at the end of every reading.</p>
+
+    <h3><span class="code">B</span>Relationship decision support</h3>
+    <p>In spirit it's closer to a premarital-counselling instrument (the kind a therapist runs a couple through) than a viral quiz — narrative scenario, honest trade-off, a "what to actually ask for in a partner" section — except self-administered, free, and taken alone rather than as a couple.</p>
+
+    <h3><span class="code">C</span>Interactive nonfiction</h3>
+    <p>Structurally, the five chapters, the animated "two threads of light" that braid together as the player answers, and the second-person "ten years from now" framing in the final chapter put this closer to literary interactive fiction than to a form. The scoring is real, but the delivery is written, paced, and staged like a short story about the reader.</p>
+
+    <h3><span class="code">D</span>Explainable, multi-agent reasoning</h3>
+    <p>The most distinctive architectural choice is "the Council" — five specialist functions plus a router and a synthesiser, styled explicitly in the language of a multi-agent system (agents are <em>seated</em> or <em>benched</em>, they can <em>dissent</em>, one holds a hard <em>veto</em>). Nothing here is a model; every agent is a short deterministic function. But the framing borrows the ethos of explainable AI — show the arithmetic, let sub-scores disagree in front of the reader, never collapse disagreement into a single silent number — and applies it somewhere almost nothing else in this genre bothers to.</p>
+
+    <p class="lede">Read together, the project's vision is a tool that is <strong>honest rather than flattering</strong>: no verdict is ever framed as advice, every door has a stated price, and the system refuses to encode gender content itself — the player supplies their own expectation, and the engine only measures the distance between that and what they actually want. Its natural audience is the South Asian / diaspora reader for whom this decision is real and high-stakes, and its natural next form — if the scoring is ever validated against real outcomes — is a legitimate structured self-reflection instrument, not just a well-written quiz.</p>
+  </section>
+
+  <!-- 3 — SYSTEM ARCHITECTURE -->
+  <section id="architecture">
+    <div class="snum">03 / 09</div>
+    <h2>How the engine works</h2>
+
+    <h3>The eight threads</h3>
+    <p>Every answer nudges eight 0–100 traits, drawn in the UI as moving threads of light rather than a visible scoreboard, so the player feels change without being able to game it.</p>
+
+    <div class="tblwrap"><table>
+      <tr><th>Code</th><th>Thread</th><th>What it measures</th></tr>
+      <tr><td class="code"><span class="k">AUT</span></td><td>Self-Authorship</td><td>How much the marriage's meaning depends on having chosen it yourself.</td></tr>
+      <tr><td class="code"><span class="k">KIN</span></td><td>Kinship Pull</td><td>How embedded the player is in the family system — and whether that system reads as net or cage.</td></tr>
+      <tr><td class="code"><span class="k">ANX</span></td><td>Anxious Wiring</td><td>Fear of abandonment; reads silence as information it usually isn't.</td></tr>
+      <tr><td class="code"><span class="k">AVO</span></td><td>Avoidant Wiring</td><td>Deactivation under closeness; experiences a partner's need as demand.</td></tr>
+      <tr><td class="code"><span class="k">AMB</span></td><td>Ambiguity Tolerance</td><td>Capacity to hold an unresolved question without needing to close it.</td></tr>
+      <tr><td class="code"><span class="k">REG</span></td><td>Regret Orientation</td><td>Whether the player regrets action or inaction more, over a lifetime horizon.</td></tr>
+      <tr><td class="code"><span class="k">PRS</span></td><td>Inherited Pressure</td><td>The measured gap between what the player wants and what they believe is expected of their gender (from the Mirror).</td></tr>
+      <tr><td class="code"><span class="k">RDY</span></td><td>Readiness</td><td>Emotional availability and self-knowledge — deliberately orthogonal to which door fits.</td></tr>
+    </table></div>
+
+    <h3>Three doors, not two</h3>
+    <p>The love-vs-arranged framing is itself treated as a false binary: the engine scores a genuine third architecture, <em>the Bridge</em> (family opens the door, the player chooses whether to walk through), with its own weighted formula rather than as an average of the other two.</p>
+
+    <div class="formula"><pre><span class="c">SEC   = 100 − max(ANX, AVO) + 8</span>
+<span class="c">SEC_L = 100 − (0.65·AVO + 0.45·ANX)</span>
+
+love     = 0.30·AUT + 0.20·AMB + 0.20·REG + 0.15·(100−KIN) + 0.15·SEC_L  − 0.14·PRS
+arranged = 0.30·KIN + 0.20·(100−AMB) + 0.20·(100−REG) + 0.15·(100−AUT) + 0.15·SEC
+bridge   = 0.45·min(AUT,KIN) + 0.25·(100−|AUT−KIN|) + 0.15·AMB + 0.15·SEC − 0.05·PRS</pre></div>
+
+    <p>Two choices in this formula are worth flagging as deliberate rather than incidental: insecurity is priced <em>differently</em> per door (avoidance costs the Chosen more; anxiety costs the Given more — a single flat security term would have pushed every insecure profile toward love marriage, which the author judged wrong), and inherited pressure only taxes the doors that require standing against the room — the Given pays nothing, because it's the door the room already approves of. The three raw scores are normalised to percentages, with a confidence label derived from the gap between first and second place: <strong>Clear</strong> above 14 points, <strong>Leaning</strong> 6–14, <strong>Split</strong> below 6 — and a Split result is reported as a genuine finding, not a measurement failure.</p>
+
+    <h3>The Mirror — measuring pressure instead of asking about it</h3>
+    <p>Six scenarios (who initiates, career vs. relocation, financial asymmetry, emotional expression in conflict, the age "clock," post-marriage caregiving) are each presented as two sliders: <em>what I actually want</em> and <em>what's expected of someone like me</em>. The engine records only the distance between them —</p>
+    <div class="formula"><pre>PRS = mean( |want − expected| ) across the six Mirror scenarios</pre></div>
+    <p>A near-zero gap is reported as a real strength ("aligned — low friction"), regardless of which side it's aligned to; a wide gap is reported as a cost the player is carrying, not an opinion about their gender. This is the project's most original mechanic — it sidesteps the usual failure of "do you believe X" questions, which everyone answers to sound modern and which therefore measure nothing.</p>
+
+    <h3>The Council — five agents, a router, a synthesiser</h3>
+    <p>A second, independent layer re-reads the same eight traits through five specialists (Attachment, Kinship, Mirror, Regret, Readiness), each returning a relevance score, a leaning door, a confidence, and a stated concern. A router seats only the agents whose relevance clears a threshold; the rest are shown, by name, as <em>consulted but not seated</em>. A synthesiser then resolves one of four outcomes every single reading: the council <strong>agrees</strong> with the arithmetic, it <strong>dissents</strong> from it (both are printed, and the arithmetic wins but the dissent is kept as a visible warning), it records internal <strong>splits</strong> between agents protecting different parts of the player, or Readiness <strong>vetoes</strong> the whole verdict regardless of door. Nothing here is machine-learned — it is the vocabulary and transparency ethos of a multi-agent system applied to five short deterministic functions — but the effect for the reader is a report that is visibly allowed to disagree with itself.</p>
+  </section>
+
+  <!-- 4 — DATA & TECHNICAL ARCHITECTURE -->
+  <section id="data">
+    <div class="snum">04 / 09</div>
+    <h2>Data &amp; technical architecture</h2>
+    <p>The entire experience — canvas-animated background, 26-beat narrative engine, scoring, and verdict rendering — is one dependency-free HTML file. There is no build step, no package manager, and no framework; the only external calls are to Google Fonts. This is a genuine strength: the project will still run, unmodified, in ten years, from a single file, offline.</p>
+    <p>Every completed reading is written to <code style="font-family:var(--mono);font-size:.85em;background:var(--surface2);padding:1px 6px;border-radius:3px">localStorage</code> under the key <code style="font-family:var(--mono);font-size:.85em;background:var(--surface2);padding:1px 6px;border-radius:3px">bridge_records_v1</code>, and — if a Firebase project is configured — mirrored to Cloud Firestore via plain REST calls, no SDK. A companion dashboard (<code style="font-family:var(--mono);font-size:.85em;background:var(--surface2);padding:1px 6px;border-radius:3px">admin.html</code>) reads both sources, de-duplicates by record id, and presents KPI tiles, a verdict-share donut, per-thread population averages split by gender, a readiness histogram against the 45-point gate, and a per-user drill-down that reproduces the full arithmetic for that specific reading — an "explain" view built to prove the score wasn't guessed. Access is gated behind Firebase Authentication with a single hardcoded admin account.</p>
+  </section>
+
+  <!-- 5 — ORIGINAL CONTRIBUTIONS -->
+  <section id="contributions">
+    <div class="snum">05 / 09</div>
+    <h2>What's genuinely original here</h2>
+    <ul>
+      <li><strong>Failure-mode framing.</strong> Scoring "which failure you can survive" instead of "which you'd prefer" is a real reframe, not a marketing line — it changes what every question in the instrument is trying to elicit.</li>
+      <li><strong>An orthogonal readiness gate.</strong> Decoupling <em>which door fits your temperament</em> from <em>are you ready to walk through any door this year</em> is the single most clinically sound design decision in the system, and most comparable tools conflate the two.</li>
+      <li><strong>The Mirror's measured-gap approach.</strong> Scoring the distance between want and perceived expectation, instead of asking directly about gender beliefs, is a genuinely clever way to extract signal that a direct question would only let people perform past.</li>
+      <li><strong>The Bridge as a real third architecture.</strong> Giving the hybrid option its own formula term — <code style="font-family:var(--mono);font-size:.85em">min(AUT, KIN)</code> — rather than treating it as the average of the other two means it can only score high when both needs are genuinely strong, not when someone is lukewarm about both.</li>
+      <li><strong>A second opinion allowed to disagree.</strong> The Council's dissent/split/veto/no-quorum outcomes mean the reader sometimes sees the system disagree with itself in public — a rare and honest choice for software that could just as easily print one confident number.</li>
+      <li><strong>Coherence as signal.</strong> Tracking contradiction between answers that should co-vary, and reporting it directly ("you are arguing with someone who isn't in the room"), turns noisy data into a finding instead of discarding it.</li>
+    </ul>
+  </section>
+
+  <!-- 6 — FINDINGS FROM THIS REVIEW -->
+  <section id="findings">
+    <div class="snum">06 / 09</div>
+    <h2>Findings &amp; remediation</h2>
+    <p>A hands-on pass — running the full 26-beat playthrough programmatically, reading both files end to end, checking the deployed security rules, and later re-testing every change live in a browser — turned up the following. Of eight findings and one shipped feature: seven fixes are in the code now, and one (the delete path) was deliberately left as-is at the owner's explicit request. The Firestore rule fix still needs a manual deploy to take effect on the live project — noted inline below.</p>
+
+    <div class="callout fix">
+      <div class="tag">Blocking <span class="status done">Fixed</span></div>
+      <p><code>admin.html</code> hardcoded the admin sign-in email as <code>ghosuddin.d@gmail.com</code> — missing a letter against the real account, <code>ghousuddin.d@gmail.com</code>. As shipped, admin login would have failed unconditionally. Corrected in place.</p>
+    </div>
+
+    <div class="callout good">
+      <div class="tag">Shipped</div>
+      <p>A "Share your result" action on the verdict screen: a canvas-rendered result card (door, confidence, all three door percentages, top driving threads) styled to match the game's own palette, offered through the native share sheet where available and falling back to a PNG download.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Data exposure <span class="status done">Fixed</span></div>
+      <p>The deployed Firestore rule was <code>allow create: if true</code> with no field or type validation on the written document — any client on the internet, not only this app, could write arbitrary documents into the <code>readings</code> collection. <code>firestore.rules</code> now requires the document to match the exact shape the app writes (<code>json</code> + <code>ts</code> string fields only, size-capped) and the id to match the app's own id format. <strong>This still needs to be deployed</strong> to the live Firebase project (console, or <code>firebase deploy --only firestore:rules</code>) before it takes effect — the file is fixed, the running database isn't yet.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Terminology <span class="status done">Fixed</span></div>
+      <p><code>admin.html</code> labelled its scoring breakdown "How the AI scored it." There is no AI or machine learning anywhere in the system — it's a fixed, published weighted formula, which is actually a strength (auditable, reproducible). Relabelled to "How the engine scored it" in <code>admin.html</code>, and the matching phrase corrected in <code>design.md</code> for consistency.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Privacy <span class="status done">Fixed</span></div>
+      <p>Sensitive relational and psychological data was collected with no disclosure in the product itself. The Threshold screen now states plainly, before anyone answers anything, that the reading is saved locally and — if cloud sync is on — to a shared archive only the admin can read, and that nobody, including the person answering, can edit or delete it afterward.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Delete path <span class="status wait">Kept as-is</span></div>
+      <p>The Firestore rules still block every update and delete unconditionally, including for the person a reading belongs to. Raised as a recommendation; the owner asked explicitly to leave this behaviour unchanged. Documented here so the decision is on the record, not lost.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Test coverage <span class="status done">Fixed</span></div>
+      <p><code>score()</code>, <code>convene()</code>, and admin's independent <code>explain()</code> had zero automated coverage. A new <code>test/engine.test.mjs</code> (run via <code>npm test</code>, Node's built-in test runner only — no new dependencies) now covers door-share normalisation, which trait profile wins which door, the confidence-band thresholds, the readiness veto, and — the one most worth having — a parity check proving admin's hand-decomposed formula still matches the game's formula exactly. 10 tests, all passing.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">Accessibility <span class="status done">Fixed</span></div>
+      <p>Three real gaps closed: <code>--dim</code> text was ~3.2:1 contrast against the background (fails WCAG AA) and is now ~4.9:1; the ambient particle field and background thread-braid ran continuously regardless of <code>prefers-reduced-motion</code> and now freeze under it; and the range sliders plus the radar chart had no ARIA labelling and now do. One more turned up along the way, below.</p>
+    </div>
+
+    <div class="callout fix">
+      <div class="tag">New — keyboard blocker <span class="status done">Fixed</span></div>
+      <p>Not in the original pass: the gender/age "chip" selectors on the Threshold screen were plain, unfocusable <code>&lt;div&gt;</code>s wired to <code>onclick</code> only. A keyboard-only visitor could never select either one — and both are required before "Begin" enables — which meant the entire game was unreachable without a mouse. Chips are now real, focusable controls (<code>role="button"</code>, <code>tabindex</code>, Enter/Space handling, <code>aria-pressed</code> state), verified end-to-end with simulated keyboard input.</p>
+    </div>
+  </section>
+
+  <!-- 7 — LIMITATIONS & RISKS -->
+  <section id="limitations">
+    <div class="snum">07 / 09</div>
+    <h2>Limitations &amp; risks</h2>
+    <ul>
+      <li><strong>No outcome validation.</strong> The formula's weights are hand-authored and checked against a handful of simulated archetype playthroughs, not fit to real relationship outcomes or benchmarked against a peer-reviewed instrument (e.g. the ECR-R attachment scale, which the ANX/AVO threads clearly draw on). <em>Still true — this needs real data or a study, not code.</em></li>
+      <li><strong>Self-report, scenario-based measurement.</strong> Every trait is inferred from a hypothetical choice, not observed behaviour — a well-known ceiling on any instrument of this kind, psychometric or not. <em>Structural; not fixable by this project alone.</em></li>
+      <li><strong>One cultural frame.</strong> The scenarios, the family-pressure content, and the love/arranged binary itself are written from a South Asian / diaspora vantage point. The engine's math is culture-agnostic, but the copy is not, and the tool doesn't yet generalise to contexts with different marriage norms. <em>Still true — needs a content decision from the owner.</em></li>
+      <li><strong>No delete path.</strong> The Firestore rules block updates and deletes unconditionally, including for the person a reading belongs to. <em>Raised and consciously kept as-is at the owner's request; the consent half of this — no privacy notice — is now fixed (see §6).</em></li>
+      <li><strong>No automated test coverage.</strong> <span class="status done" style="margin-left:0">Resolved</span> — <code style="font-family:var(--mono);font-size:.85em">score()</code>, <code style="font-family:var(--mono);font-size:.85em">convene()</code>, and admin's <code style="font-family:var(--mono);font-size:.85em">explain()</code> are now covered by <code style="font-family:var(--mono);font-size:.85em">test/engine.test.mjs</code>. A test of this kind would not have caught the admin email typo specifically (that lived in a login flow, not the scoring engine) — but the engine itself is no longer unverified.</li>
+      <li><strong>Partial accessibility coverage.</strong> <span class="status done" style="margin-left:0">Improved</span> — the three gaps named in the original review (reduced-motion, slider/chart labelling, text contrast) are fixed, plus one found along the way (keyboard-unreachable chips). Not a full audit: color contrast was checked only for <code style="font-family:var(--mono);font-size:.85em">--dim</code>/<code style="font-family:var(--mono);font-size:.85em">--mut</code>, and no screen-reader was run end-to-end against the verdict report's dense data tables.</li>
+    </ul>
+  </section>
+
+  <!-- 8 — RECOMMENDATIONS -->
+  <section id="recommendations">
+    <div class="snum">08 / 09</div>
+    <h2>Where this can improve</h2>
+    <p>Grouped by what breaks trust if left alone, what strengthens the instrument's actual validity, and what grows its reach — roughly in the order worth doing them. Status reflects what's landed since this report was first drafted.</p>
+
+    <div class="tier">
+      <div class="th"><span class="dot" style="background:var(--rose)"></span><h4>Fix now — integrity &amp; trust</h4><span class="cnt">4 items</span></div>
+      <p class="rollup">3 fixed · 1 kept as-is by explicit request. This tier is closed.</p>
+      <div class="reco done"><div class="rh"><b>Close the open write rule</b><span class="status done">Fixed</span></div><p>Field and type validation added to the Firestore <code style="font-family:var(--mono);font-size:.85em">create</code> rule (required keys, expected types, length caps), so the collection can no longer be used as an open write target by clients other than this app. Written to <code style="font-family:var(--mono);font-size:.85em">firestore.rules</code> — still needs a manual deploy to the live project to take effect.</p></div>
+      <div class="reco done"><div class="rh"><b>Rename "How the AI scored it"</b><span class="status done">Fixed</span></div><p>Relabelled to "How the engine scored it" in <code style="font-family:var(--mono);font-size:.85em">admin.html</code>, and the matching phrase corrected in <code style="font-family:var(--mono);font-size:.85em">design.md</code> for consistency.</p></div>
+      <div class="reco done"><div class="rh"><b>Add a visible privacy line</b><span class="status done">Fixed</span></div><p>The Threshold screen now discloses, before anyone answers anything, what's stored, where, and that nobody — including the person answering — can edit or delete it afterward.</p></div>
+      <div class="reco"><div class="rh"><b>Give people a way to delete their own reading</b><span class="status wait">Kept as-is</span></div><p>The current rules still block every delete unconditionally, including for the person the record belongs to. Raised as a recommendation; the owner asked explicitly to leave this behaviour unchanged, so it stands deliberately, not by oversight.</p></div>
+    </div>
+
+    <div class="tier">
+      <div class="th"><span class="dot" style="background:var(--gold)"></span><h4>Strengthen next — validity &amp; reach</h4><span class="cnt">4 items</span></div>
+      <p class="rollup">2 fixed · 2 need a decision or data only the owner can supply.</p>
+      <div class="reco"><div class="rh"><b>Run a real validation pass</b><span class="status open">Needs input</span></div><p>Even a small user study correlating engine output against an established instrument (or against reported relationship outcomes) would move the weights from "author's judgment" to "evidenced." This needs real data or a study design from the owner — it can't be fabricated.</p></div>
+      <div class="reco done"><div class="rh"><b>Cover the scoring engine with tests</b><span class="status done">Fixed</span></div><p><code style="font-family:var(--mono);font-size:.85em">test/engine.test.mjs</code> now covers <code style="font-family:var(--mono);font-size:.85em">score()</code>, <code style="font-family:var(--mono);font-size:.85em">convene()</code>, and admin's <code style="font-family:var(--mono);font-size:.85em">explain()</code> — 10 tests, run via <code style="font-family:var(--mono);font-size:.85em">npm test</code>, zero new dependencies. Includes a parity check between the game's and the dashboard's independently-written copies of the formula.</p></div>
+      <div class="reco done"><div class="rh"><b>Run an accessibility pass</b><span class="status done">Fixed</span></div><p>Reduced-motion now covers the particle field and thread braid; sliders and the radar SVG are labelled for screen readers; <code style="font-family:var(--mono);font-size:.85em">--dim</code> text contrast raised to meet WCAG AA. Also caught and fixed a keyboard-accessibility blocker not in the original list — see §6.</p></div>
+      <div class="reco"><div class="rh"><b>Consider a second scenario set</b><span class="status open">Needs input</span></div><p>The engine's math already generalises; a second, culturally distinct scenario pack would extend the audience — but which culture, and what the scenarios actually say, is a content decision only the owner should make.</p></div>
+    </div>
+
+    <div class="tier">
+      <div class="th"><span class="dot" style="background:var(--violet)"></span><h4>Grow later — product surface</h4><span class="cnt">3 items</span></div>
+      <p class="rollup">Not yet requested — listed for when there's appetite for product growth rather than integrity/validity work.</p>
+      <div class="reco"><b>A two-reading comparison mode</b><p>The share card already shipped is a natural seed for this — since the Bridge door and the Mirror gap are both inherently relational, a "compare two readings" view (partners, or family members) would be a small addition with real product value.</p></div>
+      <div class="reco"><b>A dedicated print stylesheet</b><p><code style="font-family:var(--mono);font-size:.85em">window.print()</code> already exists for "Save this reading"; a purpose-built print layout would render better than the dark theme's default browser output.</p></div>
+      <div class="reco"><b>Version-tag the scoring engine</b><p>Stamping an <code style="font-family:var(--mono);font-size:.85em">engineVersion</code> onto each saved record means that if the weights are ever retuned, historical readings stay interpretable against the formula that actually produced them.</p></div>
+    </div>
+  </section>
+
+  <!-- 9 — CONCLUSION -->
+  <section id="conclusion">
+    <div class="snum">09 / 09</div>
+    <h2>Conclusion</h2>
+    <p class="lede">Impulse is unusually thoughtful software for its genre. It refuses easy flattery, models a real third option that most comparable tools ignore entirely, separates readiness from fit where almost nothing else in this space does, and explains its own reasoning — including where that reasoning disagrees with itself — instead of hiding behind a single confident number. Built with zero dependencies in a form that will still run untouched in a decade, it is also, quietly, a well-made piece of software.</p>
+    <p>Its original gap wasn't ambition — it was trust-surface hardening, and that part is now largely closed: the open write rule has field validation, the "AI" mislabel is corrected, the Threshold screen discloses what it collects, the scoring engine has real test coverage including a cross-file parity check, and a keyboard-accessibility blocker that would have locked out an entire class of visitors is fixed. One integrity item — a self-serve delete path — was raised and deliberately left as-is at the owner's request; that's a decision on the record, not an oversight.</p>
+    <p>What's left is exactly what code can't supply on its own: real evidence that the scoring weights track real outcomes, and a decision about whether — and how — to speak to an audience beyond the one the current scenarios were written for. Both are the owner's calls to make. Everything downstream of those two decisions — the comparison mode, the print layout, engine versioning — is straightforward once they're settled.</p>
+  </section>
+
+  <div class="endnote">
+    <span>Impulse — The Bridge · Project Report</span>
+    <span>Prepared &amp; updated 25 August 2026</span>
+  </div>
+
+</div>

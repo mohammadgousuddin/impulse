@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impulse — Project Tree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08040e; --ink:#f4ece6; --mut:#9c8794; --dim:#6d5b68;
+    --gold:#d9a860; --rose:#e0577a; --teal:#4f9c96; --violet:#9d86e8; --sand:#cbb27a;
+    --line:rgba(217,168,96,.18);
+    --serif:'Cormorant Garamond',Georgia,serif;
+    --sans:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg)}
+  body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+  #scene{position:fixed;inset:0}
+  #scene canvas{display:block}
+
+  /* header */
+  #hd{position:fixed;top:0;left:0;right:0;z-index:10;padding:26px 30px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(8,4,14,.85),transparent)}
+  #hd .kicker{font-size:.64rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);opacity:.85;margin-bottom:8px}
+  #hd h1{font-family:var(--serif);font-weight:300;font-size:1.9rem;margin:0 0 4px;letter-spacing:-.01em}
+  #hd h1 em{font-style:italic;color:var(--gold)}
+  #hd .sub{font-family:var(--serif);font-style:italic;color:var(--mut);font-size:.98rem}
+  #hint{position:fixed;top:26px;right:30px;z-index:10;font-size:.72rem;color:var(--dim);text-align:right;
+    line-height:1.7;pointer-events:none}
+  #hint b{color:var(--mut);font-weight:500}
+
+  /* legend */
+  #legend{position:fixed;left:30px;bottom:30px;z-index:10;display:flex;flex-direction:column;gap:7px;
+    font-size:.74rem;color:var(--mut);background:rgba(15,9,22,.55);border:1px solid var(--line);
+    border-radius:6px;padding:14px 16px;backdrop-filter:blur(6px)}
+  #legend .row{display:flex;align-items:center;gap:9px}
+  #legend i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+
+  /* info panel */
+  #panel{position:fixed;right:0;top:0;bottom:0;width:340px;max-width:88vw;z-index:20;
+    background:rgba(12,7,19,.88);border-left:1px solid var(--line);backdrop-filter:blur(10px);
+    padding:100px 30px 30px;transform:translateX(100%);transition:transform .45s cubic-bezier(.2,.7,.2,1);
+    overflow-y:auto}
+  #panel.on{transform:translateX(0)}
+  #panel .crumb{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:14px}
+  #panel h2{font-family:var(--serif);font-weight:400;font-size:1.55rem;line-height:1.2;margin:0 0 16px}
+  #panel p{font-family:var(--serif);font-size:1.08rem;line-height:1.62;color:#e2d8d2;margin:0 0 14px}
+  #panel .meta{font-size:.72rem;color:var(--dim);margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    line-height:1.8}
+  #panel .close{position:absolute;top:30px;right:30px;background:transparent;border:1px solid var(--line);
+    color:var(--mut);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;line-height:1}
+  #panel .close:hover{color:var(--ink);border-color:var(--gold)}
+
+  #empty{position:fixed;right:30px;bottom:30px;z-index:10;font-size:.76rem;color:var(--dim);
+    max-width:230px;text-align:right;line-height:1.6;pointer-events:none}
+
+  .lbl{font-family:var(--sans);font-size:.78rem;color:var(--ink);letter-spacing:.02em;white-space:nowrap;
+    text-shadow:0 0 8px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.9);pointer-events:none;user-select:none}
+  .lbl.root{font-family:var(--serif);font-size:1.3rem;color:var(--gold);font-style:italic}
+
+  @media(max-width:760px){
+    #hint{display:none}
+    #panel{width:100vw;max-width:100vw}
+  }
+</style>
+</head>
+<body>
+
+<div id="hd">
+  <div class="kicker">Impulse · Project Tree</div>
+  <h1>How it all <em>branches</em></h1>
+  <div class="sub">Every chapter, mechanic and thread — as one structure.</div>
+</div>
+<div id="hint"><b>Drag</b> to rotate · <b>scroll</b> to zoom · <b>click</b> a node</div>
+
+<div id="legend">
+  <div class="row"><i style="background:#d9a860"></i>Root &amp; the Verdict</div>
+  <div class="row"><i style="background:#e0577a"></i>The five narrative chapters</div>
+  <div class="row"><i style="background:#4f9c96"></i>Admin dashboard</div>
+  <div class="row"><i style="background:#9d86e8"></i>Data &amp; security</div>
+  <div class="row"><i style="background:#cbb27a"></i>Engine reference</div>
+</div>
+
+<div id="empty">Click any node to read what it does. Click empty space to close.</div>
+
+<div id="panel">
+  <button class="close" onclick="closePanel()">✕</button>
+  <div class="crumb" id="pcrumb"></div>
+  <h2 id="ptitle"></h2>
+  <p id="pdesc"></p>
+  <div class="meta" id="pmeta"></div>
+</div>
+
+<div id="scene"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ── 1. THE TREE — mirrors how-it-works.html, chapter by chapter ── */
+const GOLD=0xd9a860, ROSE=0xe0577a, TEAL=0x4f9c96, VIOLET=0x9d86e8, SAND=0xcbb27a;
+
+const TREE = {
+  name:'Impulse', crumb:'The whole project', color:GOLD,
+  desc:'A single-page emotional-analysis engine for the love-marriage / arranged-marriage question — not which is better, but which failure you’re built to survive.',
+  meta:'index.html · admin.html · zero dependencies',
+  children:[
+    { name:'0 · Threshold', crumb:'Setup', color:ROSE,
+      desc:'Name, gender, age band, and a family-volume slider. Only the slider scores anything — a first nudge to Kinship before a single narrative question is asked.',
+      meta:'scrThreshold() → startPlay()',
+      children:[
+        {name:'Name', color:ROSE, desc:'Free text. Personalises the report and archive only — never scored.'},
+        {name:'Gender', color:ROSE, desc:'Three chips. Never scores anything directly — only decides whose expectation Chapter IV asks about.'},
+        {name:'Age band', color:ROSE, desc:'Five chips. Archived for the dashboard, not scored.'},
+        {name:'Family volume', color:ROSE, desc:'S.T.KIN = clamp(KIN + (volume−50)×0.30) — the very first thread movement in the game.'}
+      ]},
+    { name:'I · The House', crumb:'Chapter One', color:ROSE,
+      desc:'Five scenarios about the family system: is it a net, or a cage — and what does disagreeing with it cost?',
+      meta:'5 scenarios · mood: house (warm amber)',
+      children:[
+        {name:'KIN', color:ROSE, desc:'Kinship Pull — the primary thread this whole chapter moves.'},
+        {name:'AUT · RDY', color:ROSE, desc:'Secondary nudges depending on the specific choice made.'},
+        {name:'AVO · ANX', color:ROSE, desc:'A few scenarios also touch attachment wiring.'},
+        {name:'coherence', color:ROSE, desc:'A hidden 9th signal — contradictions here are tracked, not ignored.'}
+      ]},
+    { name:'II · No Lights', crumb:'Chapter Two', color:ROSE,
+      desc:'Attachment under stress: silence, conflict, being needed, calm, an unspoken hurt.',
+      meta:'5 scenarios · mood: dark (cold blue)',
+      children:[
+        {name:'ANX', color:ROSE, desc:'Anxious Wiring — reads silence as information. It usually isn’t.'},
+        {name:'AVO', color:ROSE, desc:'Avoidant Wiring — experiences a partner’s need as a demand.'},
+        {name:'RDY', color:ROSE, desc:'Readiness picks up a secondary signal here too.'}
+      ]},
+    { name:'III · The Fork', crumb:'Chapter Three', color:ROSE,
+      desc:'Autonomy versus the unresolved middle: how much do you need to have chosen it, and how much not-knowing can you actually hold?',
+      meta:'5 scenarios · mood: fork (rose vs. teal)',
+      children:[
+        {name:'AUT', color:ROSE, desc:'Self-Authorship — does the choice have to be yours to count?'},
+        {name:'AMB', color:ROSE, desc:'Ambiguity Tolerance — can you sit with an open question?'},
+        {name:'KIN · REG', color:ROSE, desc:'Secondary nudges, plus the coherence signal.'}
+      ]},
+    { name:'IV · The Mirror', crumb:'Chapter Four', color:ROSE,
+      desc:'Six scenarios, each asked twice on dual sliders: what you want, and what you believe is expected of your gender.',
+      meta:'6 dual-slider scenarios · mood: mirror (pale lavender)',
+      children:[
+        {name:'want slider', color:ROSE, desc:'“What I actually want” — the player’s own answer, 0–100.'},
+        {name:'expected slider', color:ROSE, desc:'“What’s expected of…” — the player supplies this side too. Nothing is pre-gendered by the engine.'},
+        {name:'PRS', color:ROSE, desc:'PRS = mean(|want−expected|) × 1.55 — the gap becomes Inherited Pressure, a cost line, not an opinion.'}
+      ]},
+    { name:'V · Ten Years From Now', crumb:'Chapter Five', color:ROSE,
+      desc:'Written in second-person future tense — the player reads their own older self.',
+      meta:'5 scenarios · mood: dawn (peach)',
+      children:[
+        {name:'REG', color:ROSE, desc:'Regret Orientation — action-regret vs. inaction-regret, the strongest single predictor in the system.'},
+        {name:'RDY · AUT · KIN', color:ROSE, desc:'Secondary nudges, plus coherence.'},
+        {name:'external flag', color:ROSE, desc:'Set if the player says the choice would change with nobody watching — called out by name in the report.'}
+      ]},
+    { name:'VI · The Verdict', crumb:'Where it resolves', color:GOLD,
+      desc:'The two threads of light finally braid together on screen. Five steps run inside finish().',
+      meta:'score() → failure() → theAsk() → convene() → saveRecord()',
+      children:[
+        {name:'score()', color:GOLD, desc:'Three weighted formulas (love / arranged / bridge) normalised to percentages, plus a Clear / Leaning / Split confidence label.'},
+        {name:'failure(top)', color:GOLD, desc:'Picks one of seven named failure modes for the winning door — e.g. “Disillusionment through intensity,” “The quiet resignation.”'},
+        {name:'theAsk(top)', color:GOLD, desc:'Up to four findable qualities to look for in a partner, drawn from whichever threads read most extreme.'},
+        { name:'The Council', color:GOLD, desc:'Five specialist agents re-read the same eight numbers independently, plus a router and a synthesiser that can openly disagree with the arithmetic.',
+          meta:'veto > dissent > no quorum > split > agreement',
+          children:[
+            {name:'Attachment', color:GOLD, desc:'Reads Chapter II. Anxious leans Bridge. Avoidant leans Given. Both high — abstains and raises an alarm instead.'},
+            {name:'Kinship', color:GOLD, desc:'Reads Chapter I. High kinship + high autonomy → Bridge. High kinship alone → Given. Low kinship → Chosen.'},
+            {name:'Mirror', color:GOLD, desc:'Reads Chapter IV. Loud inherited script + strong will → Bridge: “love isn’t wrong for you, it’s expensive.”'},
+            {name:'Regret', color:GOLD, desc:'Reads Chapter V. Regrets inaction more → Chosen. Regrets action more → Given.'},
+            {name:'Readiness', color:GOLD, desc:'Reads everything. Never leans toward a door — holds the one hard veto in the whole system.'}
+          ]},
+        {name:'saveRecord()', color:GOLD, desc:'Archives the full reading to localStorage, and to Cloud Firestore if a project is configured.'}
+      ]},
+    { name:'A · Admin Dashboard', crumb:'The other surface', color:TEAL,
+      desc:'A separate page nobody playing the game ever sees — built for the owner to watch the archive grow.',
+      meta:'admin.html',
+      children:[
+        {name:'Login gate', color:TEAL, desc:'Firebase Authentication. A friendly typed user id is mapped to the real admin email.'},
+        {name:'Overview', color:TEAL, desc:'KPI tiles, a verdict-share donut, per-thread population averages, a readiness histogram against the 45-point gate.'},
+        {name:'User table + drawer', color:TEAL, desc:'Every reading, sortable and searchable, with full drill-down: threads, doors, the Council, mirror gaps, raw answers.'},
+        {name:'Tools', color:TEAL, desc:'Refresh from cloud, Export/Import JSON, Seed demo data (14 generated profiles), Clear all.'}
+      ]},
+    { name:'B · Data & Security', crumb:'Where a reading goes', color:VIOLET,
+      desc:'Two layers, always: the browser first, the cloud second.',
+      meta:'firestore.rules',
+      children:[
+        {name:'localStorage', color:VIOLET, desc:'bridge_records_v1 — written the instant the verdict renders. Works fully offline.'},
+        {name:'Cloud Firestore', color:VIOLET, desc:'Optional REST mirror (no SDK), project impulse-e6a58, so the admin dashboard sees every device.'},
+        {name:'Security rules', color:VIOLET, desc:'Create is validated (shape + size checked) · read is admin-only · update/delete are blocked unconditionally, by deliberate choice.'}
+      ]},
+    { name:'C · Engine Reference', crumb:'The formula, in one place', color:SAND,
+      desc:'The eight threads and the three-door math that everything above ultimately feeds.',
+      meta:'test/engine.test.mjs — 10 passing tests',
+      children:[
+        {name:'8 threads', color:SAND, desc:'AUT · KIN · ANX · AVO · AMB · REG · PRS · RDY — each 0–100.'},
+        {name:'3 door formulas', color:SAND, desc:'love / arranged / bridge — weighted sums, normalised to percentages of each other.'},
+        {name:'Test suite', color:SAND, desc:'Covers door-share normalisation, the readiness veto, and a parity check that the dashboard’s independent formula still matches the game’s exactly.'}
+      ]}
+  ]
+};
+
+/* ── 2. LAYOUT — recursive radial branching in 3D ───────────────── */
+const nodes = [];  // {obj, data, depth, pos}
+const edges = [];  // {a,b,color}
+
+function perpBasis(dir){
+  const up = Math.abs(dir.y) < 0.9 ? new THREE.Vector3(0,1,0) : new THREE.Vector3(1,0,0);
+  const u = new THREE.Vector3().crossVectors(up, dir).normalize();
+  const v = new THREE.Vector3().crossVectors(dir, u).normalize();
+  return [u,v];
+}
+
+function layout(node, pos, dir, depth, parentPos){
+  const rec = { data:node, pos:pos.clone(), depth };
+  nodes.push(rec);
+  if (parentPos) edges.push({ a:parentPos, b:pos.clone(), color:node.color });
+
+  const kids = node.children || [];
+  if (!kids.length) return;
+
+  const ringR = depth===0 ? 7.4 : depth===1 ? 2.6 : 1.5;
+  const push  = depth===0 ? 0   : depth===1 ? 1.7 : 1.1;
+  const [u,v] = perpBasis(dir);
+  const n = kids.length;
+
+  kids.forEach((child,i)=>{
+    let cpos;
+    if (depth===0){
+      // level 1: golden-angle spiral around the root for even 3D spread
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      const y = 1 - (i/(n-1||1))*2;           // -1..1
+      const r = Math.sqrt(Math.max(0,1-y*y));
+      const theta = golden * i;
+      const dirC = new THREE.Vector3(Math.cos(theta)*r, y*0.55, Math.sin(theta)*r).normalize();
+      cpos = pos.clone().add(dirC.multiplyScalar(ringR));
+      layout(child, cpos, dirC, depth+1, pos);
+    } else {
+      const a = (i/n) * Math.PI*2 + depth*0.6;
+      const off = new THREE.Vector3()
+        .addScaledVector(u, Math.cos(a)*ringR)
+        .addScaledVector(v, Math.sin(a)*ringR);
+      cpos = pos.clone().addScaledVector(dir, push).add(off);
+      const dirC = cpos.clone().sub(pos).normalize();
+      layout(child, cpos, dirC, depth+1, pos);
+    }
+  });
+}
+layout(TREE, new THREE.Vector3(0,0,0), new THREE.Vector3(0,1,0), 0, null);
+
+/* ── 3. SCENE ─────────────────────────────────────────────────────── */
+const mount = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x08040e, 0.016);
+
+const camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, 0.1, 500);
+camera.position.set(11, 7, 15);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio||1));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x08040e, 1);
+mount.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.domElement.style.position='absolute';
+labelRenderer.domElement.style.top='0';
+labelRenderer.domElement.style.pointerEvents='none';
+mount.appendChild(labelRenderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const headlight = new THREE.PointLight(0xffffff, 1.1, 60);
+scene.add(headlight);
+
+const controls = new OrbitControls(camera, labelRenderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 4;
+controls.maxDistance = 45;
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotate = !reduceMotion;
+controls.autoRotateSpeed = 0.5;
+
+/* starfield */
+{
+  const N=900, g=new THREE.BufferGeometry(), pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const r = 30 + Math.random()*60, th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+    pos[i*3]  = r*Math.sin(ph)*Math.cos(th);
+    pos[i*3+1]= r*Math.sin(ph)*Math.sin(th);
+    pos[i*3+2]= r*Math.cos(ph);
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const m = new THREE.PointsMaterial({ color:0xd9a860, size:0.09, transparent:true, opacity:.35 });
+  scene.add(new THREE.Points(g,m));
+}
+
+/* edges */
+{
+  const positions = [];
+  const colors = [];
+  edges.forEach(e=>{
+    positions.push(e.a.x,e.a.y,e.a.z, e.b.x,e.b.y,e.b.z);
+    const c = new THREE.Color(e.color);
+    colors.push(c.r*.5,c.g*.5,c.b*.5, c.r,c.g,c.b);
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(colors,3));
+  const m = new THREE.LineBasicMaterial({ vertexColors:true, transparent:true, opacity:.55 });
+  scene.add(new THREE.LineSegments(g,m));
+}
+
+/* nodes */
+const pickable = [];
+nodes.forEach(rec=>{
+  const r = rec.depth===0 ? 0.62 : rec.depth===1 ? 0.34 : 0.2;
+  const geo = new THREE.IcosahedronGeometry(r, rec.depth===0?2:1);
+  const mat = new THREE.MeshStandardMaterial({
+    color: rec.data.color, emissive: rec.data.color,
+    emissiveIntensity: rec.depth===0?0.7:0.45, roughness:.4, metalness:.15
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(rec.pos);
+  mesh.userData.rec = rec;
+  scene.add(mesh);
+  pickable.push(mesh);
+  rec.mesh = mesh;
+
+  if (rec.depth <= 1){
+    const div = document.createElement('div');
+    div.className = 'lbl' + (rec.depth===0 ? ' root' : '');
+    div.textContent = rec.data.name;
+    const label = new CSS2DObject(div);
+    label.position.set(0, r + (rec.depth===0?0.55:0.4), 0);
+    mesh.add(label);
+  }
+});
+
+/* ── 4. INTERACTION ───────────────────────────────────────────────── */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let hovered = null, selected = null;
+
+function setPointer(e){
+  const r = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((e.clientX-r.left)/r.width)*2-1;
+  pointer.y = -((e.clientY-r.top)/r.height)*2+1;
+}
+
+renderer.domElement.addEventListener('pointermove', e=>{
+  setPointer(e);
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(pickable)[0];
+  const rec = hit ? hit.object.userData.rec : null;
+  if (rec !== hovered){
+    if (hovered && hovered!==selected) hovered.mesh.scale.setScalar(1);
+    hovered = rec;
+    if (hovered && hovered!==selected) hovered.mesh.scale.setScalar(1.35);
+    renderer.domElement.style.cursor = hovered ? 'pointer' : 'grab';
+  }
+});
+
+renderer.domElement.addEventListener('click', e=>{
+  setPointer(e);
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(pickable)[0];
+  if (hit){ openPanel(hit.object.userData.rec); }
+  else { closePanel(); }
+});
+
+const panel = document.getElementById('panel');
+function openPanel(rec){
+  if (selected) selected.mesh.scale.setScalar(1);
+  selected = rec;
+  rec.mesh.scale.setScalar(1.35);
+  document.getElementById('pcrumb').textContent = rec.data.crumb || (rec.depth+' levels deep');
+  document.getElementById('ptitle').textContent = rec.data.name;
+  document.getElementById('pdesc').textContent = rec.data.desc || '';
+  document.getElementById('pmeta').textContent = rec.data.meta || '';
+  panel.classList.add('on');
+}
+window.closePanel = function(){
+  if (selected) selected.mesh.scale.setScalar(1);
+  selected = null;
+  panel.classList.remove('on');
+};
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+
+/* ── 5. LOOP ──────────────────────────────────────────────────────── */
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  headlight.position.copy(camera.position);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

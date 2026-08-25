@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impulse — How It Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f2ec; --surface:#ffffff; --surface2:#f1e9df;
+  --ink:#211823; --mut:#6e5c68; --dim:#9c8c95;
+  --line:rgba(33,24,35,.14);
+  --gold:#9a6a2f; --rose:#a3395a; --violet:#54447f; --teal:#2f7a72;
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0710; --surface:#150e1c; --surface2:#1b1224;
+    --ink:#f3ece6; --mut:#a08d97; --dim:#8a7884;
+    --line:rgba(255,255,255,.09);
+    --gold:#d9a860; --rose:#e0577a; --violet:#9d86e8; --teal:#4f9c96;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0710; --surface:#150e1c; --surface2:#1b1224;
+  --ink:#f3ece6; --mut:#a08d97; --dim:#8a7884;
+  --line:rgba(255,255,255,.09);
+  --gold:#d9a860; --rose:#e0577a; --violet:#9d86e8; --teal:#4f9c96;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+.wrap{max-width:760px;margin:0 auto;padding:9vh 30px 14vh}
+h1,h2,h3{font-family:var(--serif);font-weight:400;color:var(--ink)}
+p{margin:0 0 17px;max-width:64ch}
+ul,ol{margin:0 0 20px;padding-left:22px;max-width:62ch}
+li{margin-bottom:8px}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.85em;background:var(--surface2);padding:1px 6px;border-radius:3px}
+a{color:var(--gold)}
+
+.kicker{font-family:var(--sans);font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:18px}
+h1.title{font-size:clamp(2.4rem,6.5vw,3.7rem);line-height:1.03;letter-spacing:-.01em;margin:0 0 16px}
+h1.title em{font-style:italic;color:var(--gold)}
+.dek{font-family:var(--serif);font-style:italic;font-size:1.2rem;color:var(--mut);max-width:42ch;margin:0 0 30px}
+.metabar{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.78rem;color:var(--mut);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:50px}
+.metabar b{color:var(--ink);font-weight:500}
+
+/* agenda */
+.agenda{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 0;margin:0 0 60px}
+.agenda a{display:flex;align-items:baseline;gap:14px;padding:12px 24px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+.agenda a:last-child{border-bottom:none}
+.agenda a:hover{background:var(--surface2)}
+.agenda .an{font-family:var(--mono);font-size:.74rem;color:var(--gold);flex:0 0 28px}
+.agenda .at{font-family:var(--serif);font-size:1.08rem;flex:1}
+.agenda .ad{font-size:.78rem;color:var(--dim);flex:0 0 auto;text-align:right}
+
+/* chapter sections */
+.chapter{margin-top:100px;position:relative}
+.chnum{font-family:var(--serif);font-weight:300;font-size:6.5rem;line-height:.8;color:transparent;
+  -webkit-text-stroke:1.3px color-mix(in srgb, var(--gold) 45%, transparent);margin-bottom:-14px;user-select:none}
+.chlabel{font-family:var(--sans);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+h2.ctitle{font-size:clamp(1.6rem,4vw,2.1rem);margin:0 0 8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.frame{font-family:var(--serif);font-style:italic;font-size:1.1rem;color:var(--mut);line-height:1.55;
+  border-left:2px solid var(--gold);padding-left:18px;margin:20px 0 26px}
+
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:0 0 26px}
+.spec div{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:12px 16px}
+.spec .l{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.spec .v{font-family:var(--serif);font-size:1.02rem}
+.mood{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+
+.tblwrap{overflow-x:auto;margin:8px 0 26px;border:1px solid var(--line);border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:440px}
+th{text-align:left;font-family:var(--sans);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);font-weight:500;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.up{color:var(--rose)} .down{color:var(--violet)}
+
+.example{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin:0 0 26px}
+.example .eq{font-family:var(--serif);font-size:1.06rem;line-height:1.5;margin-bottom:10px}
+.example .eo{font-size:.86rem;color:var(--mut);margin:5px 0}
+.example .eo b{color:var(--gold);font-weight:500}
+
+.formula{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin:0 0 26px;overflow-x:auto}
+.formula pre{margin:0;font-family:var(--mono);font-size:.82rem;line-height:1.8;color:var(--ink)}
+.formula .c{color:var(--dim)}
+
+.flow{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:18px 22px;margin:0 0 26px}
+.flow ol{margin:0;padding-left:20px;max-width:none}
+.flow li{font-size:.92rem}
+.flow li b{font-family:var(--mono);font-size:.82em;color:var(--gold);font-weight:500}
+
+.agents{display:grid;gap:10px;margin:0 0 26px}
+.agent{border:1px solid var(--line);border-radius:5px;padding:13px 16px;background:var(--surface)}
+.agent b{font-family:var(--serif);font-size:1.02rem}
+.agent span{font-size:.82rem;color:var(--mut)}
+
+.endnote{margin-top:100px;padding-top:24px;border-top:1px solid var(--line);font-size:.8rem;color:var(--dim);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Full Project Report</div>
+  <h1 class="title">How <em>Impulse</em> works</h1>
+  <p class="dek">A chapter-by-chapter walkthrough of the whole system — the game, the scoring engine, and the dashboard — in the same order a player actually experiences it.</p>
+  <div class="metabar">
+    <span>Subject: <b>github.com/mohammadgousuddin/impulse</b></span>
+    <span>Companion to: <b>report.html</b> (findings &amp; recommendations)</span>
+    <span>Written: <b>25 August 2026</b></span>
+  </div>
+
+  <p>Impulse is one continuous system built from three moving parts: a <strong>26-beat narrative</strong> that quietly moves eight numeric traits as you answer, a <strong>scoring engine</strong> that turns those eight numbers into a verdict and a five-agent second opinion, and an <strong>archive + dashboard</strong> that remembers every reading anyone takes. This report walks through all three in the order a player meets them — chapter by chapter — then closes with how the pieces underneath actually connect.</p>
+
+  <div class="agenda">
+    <a href="#ch0"><span class="an">0</span><span class="at">The Threshold</span><span class="ad">Setup — name, gender, age, family volume</span></a>
+    <a href="#ch1"><span class="an">I</span><span class="at">The House You Grew Up In</span><span class="ad">Kinship · 5 scenarios</span></a>
+    <a href="#ch2"><span class="an">II</span><span class="at">The Room With No Lights</span><span class="ad">Attachment · 5 scenarios</span></a>
+    <a href="#ch3"><span class="an">III</span><span class="at">The Fork</span><span class="ad">Autonomy &amp; ambiguity · 5 scenarios</span></a>
+    <a href="#ch4"><span class="an">IV</span><span class="at">The Mirror</span><span class="ad">Gendered pressure · 6 dual sliders</span></a>
+    <a href="#ch5"><span class="an">V</span><span class="at">Ten Years From Now</span><span class="ad">Regret &amp; readiness · 5 scenarios</span></a>
+    <a href="#ch6"><span class="an">VI</span><span class="at">The Verdict</span><span class="ad">Scoring, the Council, the report</span></a>
+    <a href="#appa"><span class="an">A</span><span class="at">The Admin Dashboard</span><span class="ad">The other surface of the app</span></a>
+    <a href="#appb"><span class="an">B</span><span class="at">Data, storage &amp; security</span><span class="ad">Where a reading actually goes</span></a>
+    <a href="#appc"><span class="an">C</span><span class="at">Engine reference</span><span class="ad">The full formula, in one place</span></a>
+  </div>
+
+  <!-- persistent visual layer -->
+  <p><strong>One thing runs underneath every chapter and isn't a chapter itself:</strong> a full-screen canvas animation of two threads of light — one rose, one violet — drifting far apart at the start and slowly braiding toward the centre as the progress bar fills. Each chapter also re-tints the whole background (the "mood") so House feels warm and amber, the Room With No Lights feels cold and distant, the Mirror feels pale and detached, and so on. None of this touches the scoring — it's pure atmosphere, driven by a <code>MOODS</code> table and a <code>requestAnimationFrame</code> loop — but it's how the player <em>feels</em> the eight numbers changing without ever seeing a number. It also respects <code>prefers-reduced-motion</code>: the particle drift and the thread's wave-crawl both freeze for anyone who has that preference set, while the mood colour transitions (a meaningful state change, not ambient motion) still happen, just more gently.</p>
+
+  <!-- CHAPTER 0 -->
+  <section class="chapter" id="ch0">
+    <div class="chnum">0</div>
+    <div class="chlabel">Chapter Zero</div>
+    <h2 class="ctitle">The Threshold</h2>
+    <div class="frame">"Before anyone asks who you will marry, someone already taught you what a marriage is." — this screen, though, asks nothing narrative yet. It's the only screen in the whole game that's pure setup.</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:var(--rose)"></span>intro</div></div>
+      <div><div class="l">Inputs</div><div class="v">4 fields</div></div>
+      <div><div class="l">Threads touched</div><div class="v">KIN (indirectly)</div></div>
+      <div><div class="l">Function</div><div class="v"><code>scrThreshold()</code></div></div>
+    </div>
+
+    <p>Four things are collected here, and only one of them feeds the engine directly:</p>
+    <ul>
+      <li><strong>A name</strong> — "what should this reading call you," free text, used only to personalise the report and archive.</li>
+      <li><strong>Gender</strong> — three chips (A man / A woman / Neither / other). This <em>never</em> scores anything. Its only job is deciding whose expectation the Mirror (Chapter IV) asks about — "what's expected of <em>a man</em>" vs "a woman" vs "someone like you."</li>
+      <li><strong>Age band</strong> — five chips, recorded for the archive and dashboard, not scored.</li>
+      <li><strong>Family volume</strong> — a single slider, "a distant radio" to "a voice in the room." This one <em>does</em> score: the moment you press Begin, <code>startPlay()</code> runs <code>S.T.KIN = clamp(S.T.KIN + (familyVolume−50)×0.30)</code> — a first, quiet nudge to Kinship Pull before a single narrative question has been asked.</li>
+    </ul>
+    <p>Both chip groups are keyboard-operable (arrow to a chip, Enter or Space to select) — worth noting because, in the shipped version, they weren't: a plain unfocusable <code>&lt;div&gt;</code> with no <code>tabindex</code> meant a keyboard-only visitor could never select a gender or age and could never reach the "Begin" button at all. Fixed since. The screen also now states, before anyone answers anything, what's collected and that nobody — including the person answering — can edit or delete it afterward.</p>
+    <p>"Begin" stays disabled until name, gender, and age are all set. Pressing it calls <code>startPlay()</code>, which applies the family-volume nudge, turns on the left-edge thread rail (the eight threads of light that track your traits for the rest of the game, unlabelled), and moves to the Chapter I interstitial.</p>
+  </section>
+
+  <!-- CHAPTER I -->
+  <section class="chapter" id="ch1">
+    <div class="chnum">I</div>
+    <div class="chlabel">Chapter One</div>
+    <h2 class="ctitle">The House You Grew Up In</h2>
+    <div class="frame">"Before anyone asks who you will marry, someone already taught you what a marriage is. Usually without saying a word. Walk back through that house. The lights are still on."</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:#e08c5a"></span>house — warm amber</div></div>
+      <div><div class="l">Scenarios</div><div class="v">5</div></div>
+      <div><div class="l">Primary thread</div><div class="v">KIN</div></div>
+      <div><div class="l">Secondary</div><div class="v">AUT, RDY, AVO, ANX</div></div>
+    </div>
+
+    <p>Every scenario in this chapter is about the family system: is it a net or a cage, and what does it cost to disagree with it out loud. A representative beat —</p>
+    <div class="example">
+      <div class="eq">"You are nineteen. You've made a decision your parents disagree with — nothing dramatic. A course. A city. Nobody shouts. Your mother just goes quiet." <em>What do you do?</em></div>
+      <div class="eo"><b>→</b> "The silence works. I fold before dessert." <em>(Kinship rises, Self-Authorship and Readiness fall)</em></div>
+      <div class="eo"><b>→</b> "I hold, and I let her carry it." <em>(Kinship falls, Self-Authorship rises)</em></div>
+    </div>
+    <p>The other four scenarios cover: what the house becomes when something goes wrong for you; what actually moves in your chest watching a cousin's arranged match unfold; how fast disapproval would cost you if you married against the family's wishes; and what you do when you're provably right about something your parents are wrong about. Each choice nudges <strong>KIN</strong> up or down, and several also touch <strong>AUT</strong>, <strong>RDY</strong>, or the hidden <strong>coherence</strong> signal — deliberately, since a chapter about family pressure is also the first place contradictions between "what I want" and "what I was taught to want" start to show.</p>
+  </section>
+
+  <!-- CHAPTER II -->
+  <section class="chapter" id="ch2">
+    <div class="chnum">II</div>
+    <div class="chlabel">Chapter Two</div>
+    <h2 class="ctitle">The Room With No Lights</h2>
+    <div class="frame">"This chapter is not about romance. It is about what you do when the person you love goes quiet, and you cannot see their face, and the only voice left in the room is yours."</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:#5f7fb8"></span>dark — cold, distant blue</div></div>
+      <div><div class="l">Scenarios</div><div class="v">5</div></div>
+      <div><div class="l">Primary threads</div><div class="v">ANX, AVO</div></div>
+      <div><div class="l">Secondary</div><div class="v">RDY</div></div>
+    </div>
+
+    <p>This is the attachment-style chapter, and it's the most psychometrically direct one — five scenarios that map almost one-to-one onto anxious vs. avoidant attachment research: silence after a message, the moment right after a real fight, being needed a great deal, six calm months with no drama, and a hurt you've never told anyone.</p>
+    <div class="example">
+      <div class="eq">"Someone you love hasn't replied in nine hours. Nothing is wrong. Nine hours."</div>
+      <div class="eo"><b>→</b> "I've built three explanations and two of them end with me alone." <em>(Anxious Wiring rises sharply, Readiness falls)</em></div>
+      <div class="eo"><b>→</b> "I noticed. And I let it be nine hours." <em>(Anxious Wiring falls, Readiness rises)</em></div>
+    </div>
+    <p>Anxious Wiring (<strong>ANX</strong>) and Avoidant Wiring (<strong>AVO</strong>) move independently here — a player can push both up (the "fearful" combination the Council's Attachment agent treats as its own case, described in Chapter VI), or neither. These two numbers end up doing real work later: they define <code>SEC</code> and <code>SEC_L</code>, the security terms that price insecurity differently against each door.</p>
+  </section>
+
+  <!-- CHAPTER III -->
+  <section class="chapter" id="ch3">
+    <div class="chnum">III</div>
+    <div class="chlabel">Chapter Three</div>
+    <h2 class="ctitle">The Fork</h2>
+    <div class="frame">"Two doors. One you open. One is opened for you. The difference is not comfort — it is who holds the story afterwards, and who you get to blame when the story turns."</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:var(--rose)"></span><span class="mood" style="background:var(--teal)"></span>fork — rose vs. teal, split</div></div>
+      <div><div class="l">Scenarios</div><div class="v">5</div></div>
+      <div><div class="l">Primary threads</div><div class="v">AUT, AMB</div></div>
+      <div><div class="l">Secondary</div><div class="v">KIN, REG, coherence</div></div>
+    </div>
+
+    <p>Where Chapter I asked "how loud is the room," this chapter asks "how much do you need to have chosen it yourself, and how much unresolved not-knowing can you actually tolerate." The mood itself literally splits — rose light from one side, teal from the other — to match the fork metaphor.</p>
+    <div class="example">
+      <div class="eq">"A sealed envelope on the left. An open horizon on the right. Whichever you touch, the other one turns to smoke — and you will remember the smoke." <em>Certainty now, or the possibility of something better later?</em></div>
+      <div class="eo"><b>→</b> "Certainty. I know what uncertainty does to me." <em>(Ambiguity Tolerance falls)</em></div>
+      <div class="eo"><b>→</b> "Possibility. I'd rather ache than settle." <em>(Ambiguity Tolerance and Regret both rise)</em></div>
+    </div>
+    <p>The other four scenarios: choosing between a harder self-authored life and an easier given one; six months into a relationship with no certainty either way; being handed a vetted shortlist by family; and what actually makes a marriage feel like <em>yours</em>. This is where <strong>AUT</strong> (Self-Authorship) and <strong>AMB</strong> (Ambiguity Tolerance) — the two traits that directly define the Bridge door's formula — get most of their signal.</p>
+  </section>
+
+  <!-- CHAPTER IV -->
+  <section class="chapter" id="ch4">
+    <div class="chnum">IV</div>
+    <div class="chlabel">Chapter Four</div>
+    <h2 class="ctitle">The Mirror</h2>
+    <div class="frame">"Here you answer everything twice. Once as yourself. Once as the person the world expects you to be. The distance between those two answers is the most honest number in this whole reading."</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:#c8c8e1"></span>mirror — pale, detached lavender</div></div>
+      <div><div class="l">Scenarios</div><div class="v">6</div></div>
+      <div><div class="l">Produces</div><div class="v">PRS</div></div>
+      <div><div class="l">Mechanic</div><div class="v">dual sliders, not choices</div></div>
+    </div>
+
+    <p>This is the one chapter that isn't multiple-choice. Each of the six scenarios shows <strong>two sliders</strong> side by side over the same 0–100 scale: <em>"What I actually want"</em> and <em>"What's expected of [a man / a woman / someone like you]"</em> — the second label pulled from the gender picked back in the Threshold. The engine never puts gendered content into either slider itself; the player supplies both ends, and the engine only ever measures the gap between them.</p>
+    <div class="example">
+      <div class="eq">"Two people at the edge of becoming something. One of them has to say it first." <em>Who moves first? Who says the thing that cannot be taken back?</em></div>
+      <div class="eo">Slider A (want): <b>"They should"</b> ←――――○――――→ <b>"I should"</b></div>
+      <div class="eo">Slider B (expected): <b>"They should"</b> ←――――――――○→ <b>"I should"</b></div>
+      <div class="eo">A wide gap between the two dots here is recorded — not judged.</div>
+    </div>
+    <p>The six topics: who initiates, career vs. relocation, financial asymmetry, how much feeling is allowed to show in a fight, how much the age "clock" presses on the decision, and whose parents get cared for after the wedding. After all six, the engine computes:</p>
+    <div class="formula"><pre>PRS = mean( |want − expected| ) across the six Mirror scenarios
+S.T.PRS = clamp(PRS × 1.55)
+S.coh   = clamp(S.coh − S.T.PRS × 0.28)   <span class="c">// wide gaps also cost coherence</span></pre></div>
+    <p>A near-zero gap is reported later as a genuine strength — "aligned, low friction" — regardless of which side it's aligned to. A wide gap becomes <strong>PRS</strong> (Inherited Pressure), the one thread that taxes the Chosen and Bridge doors directly in the final scoring, and the input the Mirror agent in the Council reads most closely.</p>
+  </section>
+
+  <!-- CHAPTER V -->
+  <section class="chapter" id="ch5">
+    <div class="chnum">V</div>
+    <div class="chlabel">Chapter Five</div>
+    <h2 class="ctitle">Ten Years From Now</h2>
+    <div class="frame">"You are older now. The choice is long made; the wedding photographs have started to look like photographs of other people. These are not questions about the future. They are questions about what you can forgive yourself for."</div>
+
+    <div class="spec">
+      <div><div class="l">Mood</div><div class="v"><span class="mood" style="background:#f0b482"></span>dawn — peach, coral</div></div>
+      <div><div class="l">Scenarios</div><div class="v">5</div></div>
+      <div><div class="l">Primary thread</div><div class="v">REG</div></div>
+      <div><div class="l">Secondary</div><div class="v">RDY, AUT, KIN, coherence</div></div>
+    </div>
+
+    <p>Written entirely in second-person future tense — "you are alone in a parked car," "they are sixteen and furious" — this is the only chapter that asks the player to read their own older self. It measures <strong>REG</strong> (Regret Orientation): whether, over a lifetime, you'd forgive yourself faster for a wrong action or a missed one — the single strongest predictor in the whole system of whether someone can live with having chosen love.</p>
+    <div class="example">
+      <div class="eq">"Last one. Empty hall. No audience, no aunties, no group chat, no God watching through anyone else's eyes. Just you and the choice." <em>If no one would ever know or judge your choice, does the choice change?</em></div>
+      <div class="eo"><b>→</b> "No. Same answer." <em>(Readiness and coherence both rise)</em></div>
+      <div class="eo"><b>→</b> "Yes. Completely." <em>(Readiness and coherence fall — and this specifically sets an <code>external</code> flag the verdict calls out by name)</em></div>
+    </div>
+    <p>That last question is the only place in the game with a direct side effect beyond the eight threads: answering that the choice would change sets <code>S.external = true</code>, which adds a specific closing card to the final report — "you said the choice would change if nobody were watching."</p>
+  </section>
+
+  <!-- CHAPTER VI — VERDICT -->
+  <section class="chapter" id="ch6">
+    <div class="chnum">VI</div>
+    <div class="chlabel">The Verdict</div>
+    <h2 class="ctitle">Where the two threads meet</h2>
+    <div class="frame">Visually, this is the payoff the whole game has been building toward: <code>braid</code> hits 1 (the rose and violet threads fully interweave at screen centre) and <code>heart</code> hits 1 (a glow blooms where they meet). Mechanically, five things happen in sequence inside <code>finish()</code>.</div>
+
+    <div class="flow">
+      <ol>
+        <li><b>score()</b> — turns the eight threads into three door percentages and a confidence label.</li>
+        <li><b>failure(top)</b> — picks the one specific way this profile most likely fails inside its winning door.</li>
+        <li><b>theAsk(top)</b> — generates up to four findable qualities to look for in a partner, from whichever threads read extreme.</li>
+        <li><b>convene(r)</b> — runs the Council: five agents re-read the same eight numbers independently and a synthesiser decides whether they agree with the arithmetic.</li>
+        <li><b>saveRecord(r,f,C)</b> — archives everything to <code>localStorage</code>, and to the cloud if configured.</li>
+      </ol>
+    </div>
+
+    <h3 style="margin-top:38px;font-size:1.2rem">The three doors</h3>
+    <div class="formula"><pre><span class="c">SEC   = 100 − max(ANX, AVO) + 8</span>
+<span class="c">SEC_L = 100 − (0.65·AVO + 0.45·ANX)</span>   <span class="c">// avoidance-weighted, used only by love</span>
+
+love     = 0.30·AUT + 0.20·AMB + 0.20·REG + 0.15·(100−KIN) + 0.15·SEC_L  − 0.14·PRS
+arranged = 0.30·KIN + 0.20·(100−AMB) + 0.20·(100−REG) + 0.15·(100−AUT) + 0.15·SEC
+bridge   = 0.45·min(AUT,KIN) + 0.25·(100−|AUT−KIN|) + 0.15·AMB + 0.15·SEC − 0.05·PRS</pre></div>
+    <p>The three raw numbers are normalised to percentages of each other. The gap between first and second place sets the confidence label: <strong>Clear</strong> above 14 points, <strong>Leaning</strong> 6–14, <strong>Split</strong> below 6 (reported as a real finding, not a failed measurement). <code>failure(top)</code> then checks the winning door against specific thread thresholds — love with high ANX becomes "Disillusionment through intensity," arranged with high AUT becomes "The quiet resignation," bridge with low AMB becomes "Paralysis at the bridge," and so on — seven named failure modes in total, plus a fallback ("The drift") naming the runner-up door as where the player is most likely to drift under stress.</p>
+
+    <h3 style="margin-top:38px;font-size:1.2rem">The Council — a second opinion allowed to disagree</h3>
+    <p>Five specialist functions re-read the same eight numbers, each blind to the others' conclusions, each returning a relevance (how much this player's answers actually give it to weigh), a leaning door, a confidence, a finding, and a stated concern:</p>
+    <div class="agents">
+      <div class="agent"><b>Attachment</b> — reads Chapter II. <span>Anxious → leans Bridge (needs two guarantees). Avoidant → leans Given. Both high → abstains and raises an alarm instead.</span></div>
+      <div class="agent"><b>Kinship</b> — reads Chapter I. <span>High kinship + high autonomy → Bridge. High kinship alone → Given. Low kinship → Chosen.</span></div>
+      <div class="agent"><b>Mirror</b> — reads Chapter IV. <span>Loud inherited script + strong will → Bridge ("love isn't wrong for you, it's expensive"). Loud script, weak will → Given.</span></div>
+      <div class="agent"><b>Regret</b> — reads Chapter V. <span>Regrets inaction more → Chosen. Regrets action more → Given.</span></div>
+      <div class="agent"><b>Readiness</b> — reads everything. <span>Never leans toward a door. Holds the one hard veto in the system.</span></div>
+    </div>
+    <p>A <strong>router</strong> seats only the agents whose relevance clears 45; the rest appear, by name, as "consulted but not seated." A <strong>synthesiser</strong> then resolves one outcome, checked in this order:</p>
+    <div class="tblwrap"><table>
+      <tr><th>Priority</th><th>Outcome</th><th>What the reader sees</th></tr>
+      <tr><td>1</td><td><strong>Veto</strong></td><td>Readiness reads below 45 — the door still shows, but the report opens with "not this year," overriding everything below it.</td></tr>
+      <tr><td>2</td><td><strong>Dissent</strong></td><td>The Council's weighted vote picks a different door than the arithmetic. Both numbers are printed; the arithmetic still wins, but the disagreement is kept visible as a warning.</td></tr>
+      <tr><td>3</td><td><strong>No quorum</strong></td><td>No seated agent found its domain loud enough to argue for a door. Reported as a real, fairly enviable result — nothing in the profile is fighting itself.</td></tr>
+      <tr><td>4</td><td><strong>Split</strong></td><td>Agents agree on the door but disagree underneath it — two of them wanted different things for the player. Named, with what each one was protecting.</td></tr>
+      <tr><td>5</td><td><strong>Agreement</strong></td><td>Every seated agent points the same way as the arithmetic. Rare, and flagged as such — the risk stops being <em>which door</em> and becomes <em>whether you'll actually walk through it</em>.</td></tr>
+    </table></div>
+
+    <h3 style="margin-top:38px;font-size:1.2rem">The report itself</h3>
+    <p>Rendered top to bottom: the door name and confidence; a bar for each of the three doors ranked; a radar chart of all eight threads (with a screen-reader label summarising every value, added in the recent accessibility pass); "the eight threads" with a plain-language note per thread; "why" — the top three threads that actually decided it; the full Council panel; the failure mode; "your ask" — what to look for in a partner; "the invoice" — the stated price of the winning door; readiness, called out separately; a Mirror card if inherited pressure read above 40; and the "one more thing" card if the <code>external</code> flag was set in Chapter V.</p>
+    <p>Three actions close the report: <strong>Save this reading</strong> (<code>window.print()</code>), <strong>Begin again</strong> (reload), and <strong>Share your result</strong> — the newest feature, added this engagement. It draws a portrait-format canvas card (door, confidence, all three door percentages, the top driving threads) styled to match the game's own palette, then hands it to the native share sheet where available or falls back to a PNG download.</p>
+  </section>
+
+  <!-- APPENDIX A -->
+  <section class="chapter" id="appa">
+    <div class="chnum">A</div>
+    <div class="chlabel">Appendix</div>
+    <h2 class="ctitle">The admin dashboard</h2>
+    <p><code>admin.html</code> is a separate surface entirely — nobody playing the game ever sees it. It exists for one person (the project owner) to watch the archive grow.</p>
+    <div class="flow">
+      <ol>
+        <li><b>Gate</b> — a login screen mapping a friendly typed user id ("impulse") to the real admin email, verified against Firebase Authentication. The session lives in <code>sessionStorage</code> and ends when the tab closes.</li>
+        <li><b>Overview</b> — KPI tiles (total readings, split verdicts, readiness average, pressure average, Council dissent rate), a verdict-share donut, per-thread population averages split by gender when both are present, and a readiness histogram against the 45-point gate.</li>
+        <li><b>The table</b> — every reading, sortable and searchable, each row showing name, date, a mini thread sparkline, predicted door, score, and confidence.</li>
+        <li><b>The drawer</b> — clicking a row expands the full record: all eight threads, all three door scores, the entire Council breakdown for that specific reading, every Mirror gap, and a term-by-term arithmetic table proving exactly how the score was computed (mirrors §C below, run against that user's real numbers).</li>
+        <li><b>Tools</b> — Refresh (re-pull from the cloud), Export/Import JSON (move the archive between devices), Seed demo data (14 generated profiles run through the real engine, for exploring the dashboard before real data exists), and Clear all (local-only; cloud records are untouched).</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- APPENDIX B -->
+  <section class="chapter" id="appb">
+    <div class="chnum">B</div>
+    <div class="chlabel">Appendix</div>
+    <h2 class="ctitle">Data, storage &amp; security</h2>
+    <p>Two layers, always. Every completed reading is written to <code>localStorage</code> under <code>bridge_records_v1</code> the instant the verdict renders — this is why the game works offline and a reading is never lost to a bad connection. If a Firebase project is configured, the same record is also POSTed to Cloud Firestore over plain REST (no SDK) as two fields: a JSON string and a timestamp.</p>
+    <p>The deployed <code>firestore.rules</code> allow anyone to create a reading, allow only the authenticated admin to read the archive, and block every update and delete unconditionally — including for the person a reading belongs to, a deliberate choice the owner has asked to keep as-is. The create rule now validates the document's shape (only the two expected string fields, size-capped, id format checked) rather than accepting any arbitrary write, closing what was previously an open write target for any client on the internet.</p>
+  </section>
+
+  <!-- APPENDIX C -->
+  <section class="chapter" id="appc">
+    <div class="chnum">C</div>
+    <div class="chlabel">Appendix</div>
+    <h2 class="ctitle">Engine reference</h2>
+    <div class="tblwrap"><table>
+      <tr><th>Code</th><th>Thread</th><th>Chapter it's mostly set in</th></tr>
+      <tr><td><b style="color:var(--gold)">AUT</b></td><td>Self-Authorship</td><td>III — The Fork</td></tr>
+      <tr><td><b style="color:var(--gold)">KIN</b></td><td>Kinship Pull</td><td>0 &amp; I — Threshold, The House</td></tr>
+      <tr><td><b style="color:var(--gold)">ANX</b></td><td>Anxious Wiring</td><td>II — The Room With No Lights</td></tr>
+      <tr><td><b style="color:var(--gold)">AVO</b></td><td>Avoidant Wiring</td><td>II — The Room With No Lights</td></tr>
+      <tr><td><b style="color:var(--gold)">AMB</b></td><td>Ambiguity Tolerance</td><td>III — The Fork</td></tr>
+      <tr><td><b style="color:var(--gold)">REG</b></td><td>Regret Orientation</td><td>V — Ten Years From Now</td></tr>
+      <tr><td><b style="color:var(--gold)">PRS</b></td><td>Inherited Pressure</td><td>IV — The Mirror (computed, not asked)</td></tr>
+      <tr><td><b style="color:var(--gold)">RDY</b></td><td>Readiness</td><td>All chapters — holds the veto</td></tr>
+    </table></div>
+    <p>The formulas in full are in §VI above; <code>coherence</code> is a ninth, hidden number tracking contradiction between answers that should move together, and reads out as its own failure mode ("the unnamed fight") when it drops below 50. Since this engagement, the scoring engine also has automated test coverage — <code>test/engine.test.mjs</code>, ten tests run via <code>npm test</code> with zero new dependencies, including a parity check proving the dashboard's independently-written arithmetic (used in the drawer's "how the engine scored it" table) still matches the game's own formula exactly.</p>
+  </section>
+
+  <div class="endnote">
+    <span>Impulse — The Bridge · How It Works</span>
+    <span>25 August 2026</span>
+  </div>
+
+</div>
+</body>
+</html>
