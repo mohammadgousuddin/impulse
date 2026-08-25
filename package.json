@@ -1,0 +1,8 @@
+{
+  "name": "impulse-the-bridge",
+  "private": true,
+  "description": "The Bridge — an emotional-analysis engine for the love-marriage / arranged-marriage question. The site itself (index.html, admin.html) has zero dependencies and no build step; this file exists only to run the scoring-engine tests via Node's built-in test runner.",
+  "scripts": {
+    "test": "node --test test/engine.test.mjs"
+  }
+}
